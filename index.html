@@ -3,51 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>shojin</title>
-<style>
-  :root { color-scheme: light dark; }
-  body {
-    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-    max-width: 640px; margin: 0 auto; padding: 4rem 1.25rem 6rem;
-    line-height: 1.6; color: #222; background: #fff;
-  }
-  @media (prefers-color-scheme: dark) { body { color: #ddd; background: #111; } a { color: #9b86d6; } }
-  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
-  .kanji { color: #888; font-weight: 400; }
-  .tagline { color: #666; margin-top: 0; }
-  @media (prefers-color-scheme: dark) { .tagline { color: #999; } }
-  a { color: #5d4690; }
-  h2 { font-size: 1.1rem; margin-top: 2.5rem; }
-  ul { padding-left: 1.2rem; }
-  li { margin-bottom: 0.6rem; }
-  footer { margin-top: 4rem; font-size: 0.85rem; color: #888; }
-</style>
+<title>shōjin</title>
+<meta name="description" content="An open research project studying agentic self-improvement: how do AI agents autonomously get better?">
+<link rel="stylesheet" href="style.css?v=1">
 </head>
 <body>
-<h1>shojin <span class="kanji">精進</span></h1>
-<p class="tagline">Sustained, diligent effort toward improvement. Investigations into whether
-and how AI agents improve themselves.</p>
+<div class="page">
 
-<h2>Findings</h2>
-<ul>
-  <li><a href="https://www.andrewjesson.com/blog/claude-code-improved-through-conversation-not-memories/">
-      Claude Code self-improved on business workflows through conversation, not memories</a>
-      &mdash; told only to get better, an agent raised held-out success from 34% to 48% and built
-      itself a knowledge base along the way. The knowledge base was not the mechanism.</li>
-</ul>
+  <header>
+    <a class="wordmark" href="/">shōjin</a>
+    <nav><a href="https://github.com/shojin-lab">github <span class="arr">↗</span></a></nav>
+  </header>
 
-<h2>The program</h2>
-<ul>
-  <li><a href="https://github.com/anndvision/shojin">Pre-registrations and studies</a>:
-      designs frozen by merge, replication packages that reproduce every published number.</li>
-  <li><a href="https://github.com/anndvision/hgym">hgym</a>: the evaluation harness the studies
-      run on. Its core property: a run never reports a result that is wrong while looking correct.</li>
-  <li><a href="https://pypi.org/project/shojin/">shojin on PyPI</a>: the program's tooling (in preparation).</li>
-</ul>
+  <p class="statement">an open research project studying<br>
+  agentic self-improvement: how do AI<br>
+  agents autonomously get better?</p>
 
-<footer>
-  <a href="https://www.andrewjesson.com/">Andrew Jesson</a> &middot;
-  <a href="https://github.com/shojin-lab">github.com/shojin-lab</a>
-</footer>
+  <ul class="log">
+    <li><span class="date">2026.08.05</span><a href="https://www.andrewjesson.com/blog/claude-code-improved-through-conversation-not-memories/">conversation drove the improvement, not memories</a></li>
+  </ul>
+
+  <p class="more"><a href="/writing/">all writing <span class="arr">→</span></a></p>
+
+  <footer>shōjin © 2026</footer>
+
+</div>
 </body>
 </html>

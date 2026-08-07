@@ -1,0 +1,257 @@
+/* shōjin — long-form posts.
+   The chrome (wordmark, nav, footer, code) stays monospace, as everywhere else on the
+   site. Running prose is set in the system proportional face: monospace at length is
+   hard to read and it collides with the code blocks, which have to stay monospace to
+   read as code. Everything else is style.css. */
+
+:root {
+  color-scheme: light dark;
+
+  --prose: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+  --link-rule: #b4afa6;
+  /* --muted carries the site's chrome (dates, footer). A figure caption is content and
+     is read at length, so it gets its own darker tone rather than the chrome grey. */
+  --caption: #64615a;
+  --code-bg: #e8e6e0;
+  --code-rule: #dad7d0;
+  --inline-bg: #e4e2db;
+  --fig-bg: #f0efec;
+
+  /* shiki github-light, kept as authored */
+  --tok-keyword: #d73a49;
+  --tok-fn: #6f42c1;
+  --tok-attr: #005cc5;
+  --tok-str: #032f62;
+
+  /* forest plot */
+  --fp-solved: #5d4690;
+  --fp-turns: #1f7a6f;
+  --fp-cost: #a8621b;
+  --fp-zero: #bbbbbb;
+  --fp-divider: #e8e8e8;
+  --fp-label: #444444;
+  --fp-label-sub: #555555;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --link-rule: #5f5a53;
+    --caption: #9b968d;
+    --code-bg: #1c1b19;
+    --code-rule: #2e2c29;
+    --inline-bg: #232220;
+    --fig-bg: #141413;
+
+    --tok-keyword: #ff7b72;
+    --tok-fn: #d2a8ff;
+    --tok-attr: #79c0ff;
+    --tok-str: #a5d6ff;
+
+    --fp-solved: #a98fdc;
+    --fp-turns: #4fbcac;
+    --fp-cost: #d9964a;
+    --fp-zero: #5a5650;
+    --fp-divider: #2b2926;
+    --fp-label: #d5d2cc;
+    --fp-label-sub: #a9a59e;
+  }
+}
+
+html { background: var(--paper); }
+
+.post-page { max-width: 42rem; }
+.post-page header { padding-bottom: 0; }
+
+/* ------------------------------------------------------------------ article */
+
+article.post {
+  font-family: var(--prose);
+  font-size: 18px;
+  line-height: 1.72;
+  margin: 54px 0 0;
+}
+
+article.post h1 {
+  font-family: var(--mono);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.38;
+  letter-spacing: -0.015em;
+  margin: 0 0 16px;
+}
+
+article.post .byline {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--rule);
+  margin: 0 0 40px;
+}
+
+article.post h2 {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  margin: 3.1em 0 1em;
+}
+
+article.post h3 {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  margin: 2.5em 0 0.9em;
+}
+
+article.post p { margin: 0 0 1.35em; }
+article.post ul, article.post ol { margin: 0 0 1.35em; padding-left: 1.3em; }
+article.post li { margin-bottom: 0.4em; }
+article.post strong { font-weight: 650; }
+
+article.post blockquote {
+  margin: 1.9em 0;
+  padding-left: 1.1em;
+  border-left: 2px solid var(--rule);
+  color: var(--muted);
+}
+
+article.post a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--link-rule);
+}
+article.post a:hover { border-bottom-color: var(--ink); }
+
+/* --------------------------------------------------------------------- code */
+
+article.post code {
+  font-family: var(--mono);
+  font-size: 0.84em;
+  font-variant-ligatures: none;
+  background: var(--inline-bg);
+  padding: 0.14em 0.36em;
+  border-radius: 3px;
+}
+
+article.post pre {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.62;
+  font-variant-ligatures: none;
+  margin: 1.9em 0;
+  padding: 16px 18px;
+  overflow-x: auto;
+  background: var(--code-bg) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--code-rule);
+}
+
+article.post pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* The citation block ships shiki's github-light palette as inline styles. Retint it by
+   token colour rather than stripping the highlighting, so it survives dark mode. */
+article.post pre [style*="#D73A49"] { color: var(--tok-keyword) !important; }
+article.post pre [style*="#6F42C1"] { color: var(--tok-fn) !important; }
+article.post pre [style*="#005CC5"] { color: var(--tok-attr) !important; }
+article.post pre [style*="#032F62"] { color: var(--tok-str) !important; }
+article.post pre [style*="#24292E"] { color: var(--ink) !important; }
+
+/* ------------------------------------------------------------------ figures */
+
+figure.aj-figure { margin: 2.6rem 0; max-width: 100%; }
+
+figure.aj-figure iframe {
+  display: block;
+  width: 100%;
+  height: 620px;
+  border: 1px solid var(--rule);
+  background: var(--fig-bg);
+}
+
+figure.aj-figure figcaption {
+  margin-top: 0.7rem;
+  font-size: 0.83rem;
+  line-height: 1.6;
+  color: var(--caption);
+}
+figure.aj-figure figcaption code { font-size: 0.9em; }
+
+/* A force-directed graph is unreadable at text width, so it runs wider than the column,
+   clamped to the viewport and centre-anchored. */
+figure.aj-figure.aj-wide {
+  width: min(56rem, calc(100vw - 2.5rem));
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 40rem) {
+  figure.aj-figure iframe { height: 380px; }
+}
+
+/* ------------------------------------------------------- forest plot colours */
+/* The plot was authored with fixed hex values as presentation attributes. Matching on
+   those attributes retints it for both schemes without touching the markup, and losing
+   this stylesheet degrades it to exactly the figure that was authored. */
+
+.aj-figure svg [fill="#5d4690"] { fill: var(--fp-solved); }
+.aj-figure svg [stroke="#5d4690"] { stroke: var(--fp-solved); }
+.aj-figure svg [fill="#1f7a6f"] { fill: var(--fp-turns); }
+.aj-figure svg [stroke="#1f7a6f"] { stroke: var(--fp-turns); }
+.aj-figure svg [fill="#a8621b"] { fill: var(--fp-cost); }
+.aj-figure svg [stroke="#a8621b"] { stroke: var(--fp-cost); }
+.aj-figure svg [stroke="#bbb"] { stroke: var(--fp-zero); }
+.aj-figure svg [stroke="#e8e8e8"] { stroke: var(--fp-divider); }
+.aj-figure svg [fill="#444"] { fill: var(--fp-label); }
+.aj-figure svg [fill="#555"] { fill: var(--fp-label-sub); }
+.aj-figure svg [fill="#fff"] { fill: var(--paper); }
+
+/* Hover a row to reveal that row's numbers. CSS only, no script. Nothing below paints at
+   rest: the hit areas have no fill and the callouts are at opacity 0. */
+.ajfp-hit { fill: none; pointer-events: all; }
+.ajfp-tip { opacity: 0; pointer-events: none; }
+.ajfp-tip text {
+  font-size: 9px;
+  font-weight: 600;
+  text-anchor: middle;
+  stroke: var(--paper);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+/* Only bind :hover where a hovering pointer exists, so a tap cannot leave a callout
+   stuck open. :active is the touch fallback. */
+@media (hover: hover) { .ajfp-row:hover .ajfp-tip { opacity: 1; } }
+.ajfp-row:active .ajfp-tip { opacity: 1; }
+
+/* The figure's values, published once more as a real table: visually hidden, in the
+   reading order. */
+.ajfp-data {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.ajfp-data table { width: auto; }
+
+@media (max-width: 620px) {
+  article.post { font-size: 17px; margin-top: 40px; }
+  article.post h1 { font-size: 22px; }
+}

@@ -4,6 +4,7 @@
   --paper: #f0efec;
   --muted: #8a8782;
   --rule: #d8d5cf;
+  --life-alpha: 0.16; /* opacity of the background life cells */
 }
 @media (prefers-color-scheme: dark) {
   :root { --ink: #e8e6e1; --paper: #141413; --muted: #85817a; --rule: #2e2c29; }
@@ -89,6 +90,15 @@ nav a:hover, .more a:hover, .log a:hover { border-bottom-color: var(--ink); }
 .archive .year:first-child { margin-top: 0; }
 
 .more { margin: 44px 0 0; }
+.life {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: var(--life-alpha);
+  pointer-events: none;
+}
 footer {
   margin-top: auto;   /* sticky: pushed to the bottom of .page */
   padding-top: 120px; /* keeps the gap above it when content is tall */

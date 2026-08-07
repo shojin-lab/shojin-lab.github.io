@@ -1,83 +1,94 @@
-/* Conway's Game of Life: B3/S23 on a torus, ink on paper. Decorative. */
+/* Conway's Game of Life: B3/S23 with dead edges. A small ball of cells
+   near the bottom-right corner grows out across the page. Decorative
+   background; cell opacity is the --life-alpha token in style.css. */
 (function () {
   "use strict";
   var canvas = document.querySelector(".life");
   if (!canvas || !canvas.getContext) return;
   var ctx = canvas.getContext("2d");
 
-  var N = 128;         /* cells per side */
-  var SIZE = 160;      /* CSS pixels */
+  var CELL = 4;        /* CSS pixels per cell */
   var STEP_MS = 100;   /* 10 generations per second */
-  var DENSITY = 0.38;  /* seed density inside the centre patch */
+  var BALL_R = 14;     /* seed ball radius, in cells */
+  var BALL_GAP = 12;   /* gap between ball edge and page edge, in cells */
+  var DENSITY = 0.5;   /* seed density inside the ball */
   var FADE = 8;        /* reseed cross-fade, in generations */
 
-  var cells = new Uint8Array(N * N);
-  var next = new Uint8Array(N * N);
-  var prev = new Uint8Array(N * N); /* state two generations back */
-  var old = new Uint8Array(N * N);  /* fading-out state after a reseed */
+  /* The board is (cols x rows) inside a one-cell dead ring, so the
+     stepping loop never needs bounds checks and nothing wraps. */
+  var cols = 0, rows = 0, W = 0, H = 0;
+  var cells, next, prev, old;
   var fade = 0;
-
   var ink = "#1a1a1a";
-  var paper = "#f0efec";
-  var edges = []; /* cell boundaries in device pixels, so cells stay crisp */
+  var edgesX = [], edgesY = []; /* cell boundaries in device pixels */
 
   function readTheme() {
     var s = getComputedStyle(document.documentElement);
     ink = s.getPropertyValue("--ink").trim() || ink;
-    paper = s.getPropertyValue("--paper").trim() || paper;
   }
 
   function fit() {
     var dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(SIZE * dpr);
-    canvas.height = canvas.width;
-    edges = [];
-    for (var i = 0; i <= N; i++) edges.push(Math.round(i * canvas.width / N));
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    cols = Math.max(24, Math.round(rect.width / CELL));
+    rows = Math.max(24, Math.round(rect.height / CELL));
+    W = cols + 2;
+    H = rows + 2;
+    cells = new Uint8Array(W * H);
+    next = new Uint8Array(W * H);
+    prev = new Uint8Array(W * H);
+    old = new Uint8Array(W * H);
+    edgesX = [];
+    edgesY = [];
+    for (var i = 0; i <= cols; i++) edgesX.push(Math.round(i * canvas.width / cols));
+    for (var j = 0; j <= rows; j++) edgesY.push(Math.round(j * canvas.height / rows));
   }
 
-  /* A vigorous patch in the centre quarter of the board; life expands
-     outward into empty space. */
+  /* A dense ball inset from the bottom-right corner. */
   function seed(a) {
     a.fill(0);
-    var lo = N >> 2;
-    var hi = N - lo;
-    for (var y = lo; y < hi; y++) {
-      for (var x = lo; x < hi; x++) {
-        a[y * N + x] = Math.random() < DENSITY ? 1 : 0;
+    var cx = Math.max(1 + BALL_R, cols - BALL_R - BALL_GAP);
+    var cy = Math.max(1 + BALL_R, rows - BALL_R - BALL_GAP);
+    var rr = BALL_R * BALL_R;
+    for (var dy = -BALL_R; dy <= BALL_R; dy++) {
+      for (var dx = -BALL_R; dx <= BALL_R; dx++) {
+        if (dx * dx + dy * dy > rr) continue;
+        if (Math.random() < DENSITY) a[(cy + dy) * W + cx + dx] = 1;
       }
     }
   }
 
   function step(src, dst) {
-    for (var y = 0; y < N; y++) {
-      var up = ((y + N - 1) % N) * N;
-      var row = y * N;
-      var down = ((y + 1) % N) * N;
-      for (var x = 0; x < N; x++) {
-        var l = (x + N - 1) % N;
-        var r = (x + 1) % N;
-        var n = src[up + l] + src[up + x] + src[up + r] +
-                src[row + l] + src[row + r] +
-                src[down + l] + src[down + x] + src[down + r];
+    for (var y = 1; y <= rows; y++) {
+      var row = y * W;
+      var up = row - W;
+      var down = row + W;
+      for (var x = 1; x <= cols; x++) {
+        var n = src[up + x - 1] + src[up + x] + src[up + x + 1] +
+                src[row + x - 1] + src[row + x + 1] +
+                src[down + x - 1] + src[down + x] + src[down + x + 1];
         dst[row + x] = (n === 3 || (n === 2 && src[row + x])) ? 1 : 0;
       }
     }
   }
 
   function paint(a) {
-    for (var y = 0; y < N; y++) {
-      for (var x = 0; x < N; x++) {
-        if (a[y * N + x]) {
-          ctx.fillRect(edges[x], edges[y],
-                       edges[x + 1] - edges[x], edges[y + 1] - edges[y]);
+    for (var y = 1; y <= rows; y++) {
+      var row = y * W;
+      var y0 = edgesY[y - 1];
+      var h = edgesY[y] - y0;
+      for (var x = 1; x <= cols; x++) {
+        if (a[row + x]) {
+          ctx.fillRect(edgesX[x - 1], y0, edgesX[x] - edgesX[x - 1], h);
         }
       }
     }
   }
 
   function draw() {
-    ctx.fillStyle = paper;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = ink;
     if (fade > 0) {
       ctx.globalAlpha = fade / FADE;
@@ -106,7 +117,9 @@
       if (next[i] !== prev[i]) p2 = false;
     }
     prev.set(cells);
-    var t = cells; cells = next; next = t;
+    var t = cells;
+    cells = next;
+    next = t;
     if (fade > 0) fade--;
     if (dead || p1 || p2) reseed();
   }
@@ -137,12 +150,14 @@
     cancelAnimationFrame(rafId);
   }
 
-  /* Static but interesting: settle a fresh soup, draw once, no loop. */
+  /* Static but interesting: let the ball bloom, draw once, no loop. */
   function still() {
     seed(cells);
-    for (var i = 0; i < 60; i++) {
+    for (var i = 0; i < 80; i++) {
       step(cells, next);
-      var t = cells; cells = next; next = t;
+      var t = cells;
+      cells = next;
+      next = t;
     }
     fade = 0;
     draw();
@@ -154,6 +169,21 @@
   function update() {
     if (motion.matches || document.hidden) stop();
     else start();
+  }
+
+  /* Resizing refits the grid and reseeds from the ball: simpler than
+     remapping state across grids, and the arc restarts anyway. */
+  var resizeTimer = 0;
+  function refit() {
+    fit();
+    fade = 0;
+    if (motion.matches) {
+      still();
+    } else {
+      seed(cells);
+      prev.set(cells);
+      draw();
+    }
   }
 
   scheme.addEventListener("change", function () {
@@ -170,8 +200,8 @@
   });
   document.addEventListener("visibilitychange", update);
   window.addEventListener("resize", function () {
-    fit();
-    draw();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(refit, 200);
   });
 
   readTheme();

@@ -5,10 +5,10 @@
   if (!canvas || !canvas.getContext) return;
   var ctx = canvas.getContext("2d");
 
-  var N = 64;          /* cells per side */
+  var N = 128;         /* cells per side */
   var SIZE = 160;      /* CSS pixels */
   var STEP_MS = 100;   /* 10 generations per second */
-  var DENSITY = 0.3;   /* seed density */
+  var DENSITY = 0.38;  /* seed density inside the centre patch */
   var FADE = 8;        /* reseed cross-fade, in generations */
 
   var cells = new Uint8Array(N * N);
@@ -35,8 +35,17 @@
     for (var i = 0; i <= N; i++) edges.push(Math.round(i * canvas.width / N));
   }
 
+  /* A vigorous patch in the centre quarter of the board; life expands
+     outward into empty space. */
   function seed(a) {
-    for (var i = 0; i < a.length; i++) a[i] = Math.random() < DENSITY ? 1 : 0;
+    a.fill(0);
+    var lo = N >> 2;
+    var hi = N - lo;
+    for (var y = lo; y < hi; y++) {
+      for (var x = lo; x < hi; x++) {
+        a[y * N + x] = Math.random() < DENSITY ? 1 : 0;
+      }
+    }
   }
 
   function step(src, dst) {

@@ -89,6 +89,12 @@ nav a:hover, .more a:hover, .log a:hover { border-bottom-color: var(--ink); }
 .archive .year:first-child { margin-top: 0; }
 
 .more { margin: 44px 0 0; }
+.life {
+  display: block;
+  width: 160px;
+  height: 160px;
+  margin: 96px 0 0;
+}
 footer {
   margin-top: auto;   /* sticky: pushed to the bottom of .page */
   padding-top: 120px; /* keeps the gap above it when content is tall */
@@ -100,5 +106,6 @@ footer {
   .page { padding: 56px 22px 48px; }
   .log li { flex-direction: column; gap: 2px; margin-bottom: 22px; }
   .log .date, .archive .date { width: auto; }
+  .life { margin-top: 64px; }
   footer { padding-top: 80px; }
 }

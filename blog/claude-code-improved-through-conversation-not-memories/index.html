@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code self-improved on business workflows through conversation, not memories · shōjin</title>
+<meta name="description" content="Claude Code self-improved on business workflows through conversation, not memories">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="/style.css?v=3">
+<link rel="stylesheet" href="/post.css?v=2">
+</head>
+<body>
+<div class="page post-page">
+
+  <header>
+    <a class="wordmark" href="/">shōjin</a>
+    <nav><a href="/writing/">writing</a></nav>
+  </header>
+
+  <article class="post"> <h1>Claude Code self-improved on business workflows through conversation, not memories</h1> <div class="byline"> <time datetime="2026-08-06">August 6, 2026</time> &middot; Andrew Jesson </div>
+
+<p>Claude Code can save memories, write and execute code, spawn subagents, and search the web.
+These affordances are avenues for self-improvement because they can persist and be dynamically updated across a session.</p>
+
+<p>I instructed Code (Opus 5, <code>xhigh</code> effort) how to pull task descriptions (spreadsheets, CRM records, email, ticketing) from a simulated <a href="https://arxiv.org/abs/2604.18934">business workflow</a> server and told it to get better.
+It did: held-out success went from 34% to 48%.</p>
+
+<pre class="astro-code"><code>Get Better.
+
+The MCP server `curriculum` provides a stream of tasks.
+Nothing external loops for you - drive yourself:
+
+1. Calling `get_task` pulls the next task.
+   If it returns {done: true}, the stream is exhausted, stop.
+2. The task can be completed using the tools listed,
+   and calling `done` submits it for scoring.
+3. Continue until the stream is exhausted.</code></pre>
+
+<p>The only artifacts produced outside of the conversation history were memory notes, so I assumed that they were a driver of improvement.
+However, their inclusion had no measurable effect on held-out task success.
+Instead, conversation drove the self-improvement: the task execution traces and post-compaction summaries.
+A conversation full of graded attempts is the material in-context learning runs on, which is the most plausible reason the notes added nothing.</p>
+
+<h2>Claude Code used memories to build a directed knowledge base</h2>
+
+<p>
+  Eighty-four writes and edits were made during the execution of tasks from the business workflow server. 
+  Every one was on a memory file.
+  Claude Code never wrote code, spawned a subagent, or searched the web.
+  The result was a directed knowledge base.
+</p>
+
+<figure class="aj-figure aj-wide">
+  <iframe src="memory-graph.html" title="Link graph of the memory notes the agent wrote for itself" loading="lazy"></iframe>
+  <figcaption>
+    The knowledge base the agent built for itself. Edges are read from the <code>Related</code>
+    field of each memory file, and every reference resolves: it never pointed at a note it had
+    not written, or deleted one that others cited. Nothing instructed it to write these, or to
+    keep the references intact.
+  </figcaption>
+</figure>
+
+<p>
+  Each node in the graph above corresponds to a note indexed by <code>MEMORY.md</code>.
+  Each note opens with frontmatter carrying a <code>name</code>, a one-line <code>description</code>, and a <code>type</code> nested under <code>metadata</code>.
+  They summarize at least one episode and the score received.
+  Nine notes summarized multiple episodes, two to four each.
+  Each note ends with a <code>Related</code> line pointing to other notes.
+  Thirty-three are of type <code>feedback</code> and contain a <strong>How to apply</strong> section; twenty-four also include a <strong>Why</strong> section.
+  One is of type <code>reference</code> and does not include these sections.
+  The taxonomy's other two types (<code>user</code> and <code>project</code>) went unused.
+</p>
+
+<h2>Conversation drove the improvement, not memories</h2>
+
+<p>
+  The session led to improved performance. Where did that improvement come from?
+</p>
+
+<p>
+  The only artifact other than the memory files was the conversation trace.
+  It begins with the summary written at the last compaction, or with nothing at all for the first stretch, and holds everything until the next compaction: every task played, the thought content produced, and the record of every memory written.
+  So the question splits in two.
+  How much of the improvement survives in something smaller than the conversation?
+  And is anything inside the conversation doing work it could do without?
+</p>
+
+<p>
+  The first question is answered by handing a fresh session progressively more: nothing, then the summary written when the conversation was compacted, then the conversation itself.
+  The second by handing over the conversation with one thing removed, either the memory files or the thought content.
+  Each version gets the same 120 tasks the original run never saw, each task in its own session on the same model with the same tools, so nothing carries from one task to the next, and every comparison is made task by task.
+</p>
+
+<p>
+  Most of the improvement survives in the summary.
+  The memory files add nothing measurable, pooled across all nine comparisons.
+  What remains inside the conversation is the record of tasks played and scored, and the thought content produced along the way, and this study cannot attribute the improvement to either one: at the first stretch the conversation clears zero as a whole while neither part does alone.
+  What the thought content contributes falls steadily across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
+</p>
+
+<p>
+  Each row is one of those versions, set against a session that boots with nothing.
+  Every version of the conversation clears zero, whether the memory files or the thought content are stripped out of it.
+  So does the summary, for cents where the conversation costs dollars.
+  The memory files on their own are the one hollow point, the interval that does not clear zero.
+</p>
+
+<figure class="aj-figure">
+<svg viewBox="0 0 622 214" width="100%" role="img" aria-label="Effect of each starting state on tasks solved, turns and cost, against a session that boots with nothing. Point estimates with 95 percent confidence intervals.">
+<text x="266" y="14" font-size="11.5" font-weight="600" fill="#5d4690" text-anchor="middle">tasks solved</text>
+<line x1="244.4" y1="26" x2="244.4" y2="178" stroke="#bbb" stroke-width="1"/>
+<line x1="274.3" y1="40.0" x2="314.3" y2="40.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="274.3" y1="36.5" x2="274.3" y2="43.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="314.3" y1="36.5" x2="314.3" y2="43.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="294.3" cy="40.0" r="3.6" fill="#5d4690" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="269.0" y1="65.0" x2="309.0" y2="65.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="269.0" y1="61.5" x2="269.0" y2="68.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="309.0" y1="61.5" x2="309.0" y2="68.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="289.0" cy="65.0" r="3.6" fill="#5d4690" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="265.4" y1="90.0" x2="306.2" y2="90.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="265.4" y1="86.5" x2="265.4" y2="93.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="306.2" y1="86.5" x2="306.2" y2="93.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="285.8" cy="90.0" r="3.6" fill="#5d4690" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="253.5" y1="115.0" x2="290.1" y2="115.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="253.5" y1="111.5" x2="253.5" y2="118.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="290.1" y1="111.5" x2="290.1" y2="118.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="271.8" cy="115.0" r="3.6" fill="#5d4690" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="269.9" y1="140.0" x2="305.3" y2="140.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="269.9" y1="136.5" x2="269.9" y2="143.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="305.3" y1="136.5" x2="305.3" y2="143.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="287.6" cy="140.0" r="3.6" fill="#5d4690" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="217.7" y1="165.0" x2="288.0" y2="165.0" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="217.7" y1="161.5" x2="217.7" y2="168.5" stroke="#5d4690" stroke-width="1.6"/>
+<line x1="288.0" y1="161.5" x2="288.0" y2="168.5" stroke="#5d4690" stroke-width="1.6"/>
+<circle cx="252.8" cy="165.0" r="3.6" fill="#fff" stroke="#5d4690" stroke-width="1.6"/>
+<text x="218" y="196" font-size="10" fill="#5d4690" opacity="0.75" text-anchor="middle">-5</text>
+<text x="314" y="196" font-size="10" fill="#5d4690" opacity="0.75" text-anchor="middle">+14</text>
+<line x1="335" y1="6" x2="335" y2="178" stroke="#e8e8e8" stroke-width="1"/>
+<text x="404" y="14" font-size="11.5" font-weight="600" fill="#1f7a6f" text-anchor="middle">turns</text>
+<line x1="413.5" y1="26" x2="413.5" y2="178" stroke="#bbb" stroke-width="1"/>
+<line x1="358.9" y1="40.0" x2="373.6" y2="40.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="358.9" y1="36.5" x2="358.9" y2="43.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="373.6" y1="36.5" x2="373.6" y2="43.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="366.3" cy="40.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="372.7" y1="65.0" x2="388.3" y2="65.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="372.7" y1="61.5" x2="372.7" y2="68.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="388.3" y1="61.5" x2="388.3" y2="68.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="380.5" cy="65.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="355.7" y1="90.0" x2="370.3" y2="90.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="355.7" y1="86.5" x2="355.7" y2="93.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="370.3" y1="86.5" x2="370.3" y2="93.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="363.0" cy="90.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="439.0" y1="115.0" x2="452.0" y2="115.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="439.0" y1="111.5" x2="439.0" y2="118.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="452.0" y1="111.5" x2="452.0" y2="118.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="445.5" cy="115.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="434.0" y1="140.0" x2="446.7" y2="140.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="434.0" y1="136.5" x2="434.0" y2="143.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="446.7" y1="136.5" x2="446.7" y2="143.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="440.4" cy="140.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="432.2" y1="165.0" x2="452.3" y2="165.0" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="432.2" y1="161.5" x2="432.2" y2="168.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<line x1="452.3" y1="161.5" x2="452.3" y2="168.5" stroke="#1f7a6f" stroke-width="1.6"/>
+<circle cx="442.2" cy="165.0" r="3.6" fill="#1f7a6f" stroke="#1f7a6f" stroke-width="1.6"/>
+<text x="356" y="196" font-size="10" fill="#1f7a6f" opacity="0.75" text-anchor="middle">-7</text>
+<text x="452" y="196" font-size="10" fill="#1f7a6f" opacity="0.75" text-anchor="middle">+5</text>
+<line x1="473" y1="6" x2="473" y2="178" stroke="#e8e8e8" stroke-width="1"/>
+<text x="542" y="14" font-size="11.5" font-weight="600" fill="#a8621b" text-anchor="middle">cost</text>
+<line x1="493.7" y1="26" x2="493.7" y2="178" stroke="#bbb" stroke-width="1"/>
+<line x1="572.5" y1="40.0" x2="579.5" y2="40.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="572.5" y1="36.5" x2="572.5" y2="43.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="579.5" y1="36.5" x2="579.5" y2="43.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="576.0" cy="40.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="582.4" y1="65.0" x2="590.3" y2="65.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="582.4" y1="61.5" x2="582.4" y2="68.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="590.3" y1="61.5" x2="590.3" y2="68.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="586.3" cy="65.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="567.9" y1="90.0" x2="575.7" y2="90.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="567.9" y1="86.5" x2="567.9" y2="93.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="575.7" y1="86.5" x2="575.7" y2="93.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="571.8" cy="90.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="495.1" y1="115.0" x2="495.8" y2="115.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="495.1" y1="111.5" x2="495.1" y2="118.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="495.8" y1="111.5" x2="495.8" y2="118.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="495.5" cy="115.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="494.8" y1="140.0" x2="495.4" y2="140.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="494.8" y1="136.5" x2="494.8" y2="143.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="495.4" y1="136.5" x2="495.4" y2="143.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="495.1" cy="140.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="494.6" y1="165.0" x2="495.6" y2="165.0" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="494.6" y1="161.5" x2="494.6" y2="168.5" stroke="#a8621b" stroke-width="1.6"/>
+<line x1="495.6" y1="161.5" x2="495.6" y2="168.5" stroke="#a8621b" stroke-width="1.6"/>
+<circle cx="495.1" cy="165.0" r="3.6" fill="#a8621b" stroke="#a8621b" stroke-width="1.6"/>
+<text x="494" y="196" font-size="10" fill="#a8621b" opacity="0.75" text-anchor="middle">$+0</text>
+<text x="590" y="196" font-size="10" fill="#a8621b" opacity="0.75" text-anchor="middle">$+7</text>
+<text x="8" y="44" font-size="12" fill="#444">the conversation</text>
+<text x="22" y="69" font-size="11.5" fill="#555">without the memory files</text>
+<text x="22" y="94" font-size="11.5" fill="#555">without the thought content</text>
+<text x="8" y="119" font-size="12" fill="#444">the compaction summary</text>
+<text x="22" y="144" font-size="11.5" fill="#555">without the memory files</text>
+<text x="8" y="169" font-size="12" fill="#444">the memory files alone</text>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="27.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="31" fill="#5d4690">+9.9 [+5.9, +13.8]</text><text x="404" y="31" fill="#1f7a6f">-5.6 [-6.5, -4.8]</text><text x="542" y="31" fill="#a8621b">$+6.33 [+6.06, +6.60]</text></g></g>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="52.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="56" fill="#5d4690">+8.8 [+4.9, +12.8]</text><text x="404" y="56" fill="#1f7a6f">-3.9 [-4.9, -3.0]</text><text x="542" y="56" fill="#a8621b">$+7.12 [+6.82, +7.43]</text></g></g>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="77.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="81" fill="#5d4690">+8.2 [+4.2, +12.2]</text><text x="404" y="81" fill="#1f7a6f">-6.0 [-6.9, -5.2]</text><text x="542" y="81" fill="#a8621b">$+6.00 [+5.70, +6.30]</text></g></g>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="102.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="106" fill="#5d4690">+5.4 [+1.8, +9.0]</text><text x="404" y="106" fill="#1f7a6f">+3.8 [+3.0, +4.6]</text><text x="542" y="106" fill="#a8621b">$+0.14 [+0.11, +0.17]</text></g></g>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="127.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="131" fill="#5d4690">+8.5 [+5.0, +12.0]</text><text x="404" y="131" fill="#1f7a6f">+3.2 [+2.4, +4.0]</text><text x="542" y="131" fill="#a8621b">$+0.11 [+0.08, +0.14]</text></g></g>
+<g class="ajfp-row" aria-hidden="true"><rect class="ajfp-hit" fill="none" x="0" y="152.5" width="622" height="25"/><g class="ajfp-tip" opacity="0" paint-order="stroke"><text x="266" y="156" fill="#5d4690">+1.7 [-5.3, +8.6]</text><text x="404" y="156" fill="#1f7a6f">+3.4 [+2.2, +4.6]</text><text x="542" y="156" fill="#a8621b">$+0.11 [+0.07, +0.15]</text></g></g>
+</svg>
+  <div class="ajfp-data"><table>
+    <caption>The same six rows as the figure above, as numbers. Effect of each starting state
+    against a session that boots with nothing, on the same 120 held-out tasks, with 95%
+    confidence intervals.</caption>
+    <thead><tr><th scope="col">starting state</th><th scope="col">tasks solved, percentage points</th><th scope="col">turns</th><th scope="col">cost</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">the conversation</th><td>+9.9 [+5.9, +13.8]</td><td>&minus;5.6 [&minus;6.5, &minus;4.8]</td><td>+$6.33 [+$6.06, +$6.60]</td></tr>
+      <tr><th scope="row">the conversation without the memory files</th><td>+8.8 [+4.9, +12.8]</td><td>&minus;3.9 [&minus;4.9, &minus;3.0]</td><td>+$7.12 [+$6.82, +$7.43]</td></tr>
+      <tr><th scope="row">the conversation without the thought content</th><td>+8.2 [+4.2, +12.2]</td><td>&minus;6.0 [&minus;6.9, &minus;5.2]</td><td>+$6.00 [+$5.70, +$6.30]</td></tr>
+      <tr><th scope="row">the compaction summary</th><td>+5.4 [+1.8, +9.0]</td><td>+3.8 [+3.0, +4.6]</td><td>+$0.14 [+$0.11, +$0.17]</td></tr>
+      <tr><th scope="row">the compaction summary without the memory files</th><td>+8.5 [+5.0, +12.0]</td><td>+3.2 [+2.4, +4.0]</td><td>+$0.11 [+$0.08, +$0.14]</td></tr>
+      <tr><th scope="row">the memory files alone</th><td>+1.7 [&minus;5.3, +8.6]</td><td>+3.4 [+2.2, +4.6]</td><td>+$0.11 [+$0.07, +$0.15]</td></tr>
+    </tbody>
+  </table></div>
+  <figcaption>
+    What a fresh session solves, takes and costs when it boots with each thing, against a session
+    handed nothing, on the same 120 held-out tasks. Point estimates with 95% confidence intervals;
+    filled circles are intervals that exclude zero. Indented rows are the row above with one thing
+    taken out. A session handed nothing solves 41 of the 120, takes 29.8 turns and costs $0.86.
+  </figcaption>
+</figure>
+
+
+<p>
+  That pooled memory figure conceals a split worth stating, though it may be nothing.
+  Mounted on a conversation the files are neutral. Mounted alone, with no conversation and no summary, they are neutral.
+  Mounted on a summary they cost about three points, and all four boundaries point that way.
+  This is a division of the data chosen after seeing it, and it should be read as a hint rather than a result.
+</p>
+
+<p>
+  So the improvement is in the conversation, and a summary keeps most of it for cents.
+  What the extra dollars buy is fewer steps to the answer, not more of them.
+</p>
+
+<h3>Across the run</h3>
+
+<p>
+  The figure pools the four compaction boundaries. Taken one at a time, the run is not flat.
+</p>
+
+<p>
+  The conversation beats a cold start at every boundary: +10.0, +7.8, +7.5, and +14.2 points.
+  The intervals overlap, so nothing separates them.
+  What matters is that the effect is undiminished at the last one, where a session booted with the conversation as it stood at task 194 solves 58 of the 120.
+</p>
+
+<p>
+  For the first three boundaries the summary keeps pace with the conversation it replaced, giving up 1.7, 3.4, and 0.8 points, none of them distinguishable from zero, on a few thousand tokens against the conversation's nine hundred thousand.
+  At the fourth it gives up 11.7, 95% CI [&minus;19.8, &minus;3.6].
+  Twenty of the tasks that conversation solved did not survive its summary, and what did survive is worth +2.5 over a cold start, which is not distinguishable from starting fresh.
+</p>
+
+<p>
+  This is not a run that had stopped learning.
+  The conversation at that boundary was working as well as at any earlier one. The summary written from it was not.
+</p>
+
+<p>
+  The thought content runs the other way.
+  It is worth +4.2, +2.6, +0.8, and &minus;0.8 points across the four boundaries, a steady fall to nothing.
+  It is between 5.6% and 8.1% of the conversation by tokens, and by the last boundary the record of tasks played appears to carry whatever it was contributing early.
+</p>
+
+<h3>What the agent did with the notes</h3>
+
+<p>
+  The files were mounted in every memory arm and the index was spliced into the system prompt, so the notes were there whether or not the session went looking.
+</p>
+
+<p>
+  It wrote far more than it read.
+  Across the 1,080 runs that had them, the session wrote to memory in 545 and opened a note body in 101, having been told in the prompt not to modify its own setup.
+  Each probe gets its own copy of the knowledge base, so every one of those writes was discarded when the probe ended.
+</p>
+
+<p>
+  So the null is about uptake, not plumbing.
+  A knowledge base whose index sat in the system prompt, and whose bodies were opened in fewer than one run in ten, was worth nothing.
+</p>
+
+<h2>Avenues of self-improvement that were not used</h2>
+
+<p>
+  The unused affordances were not missing, and the agent was not forbidden.
+  Code execution, subagents, and web search were validated as available for the whole run, and three interventions failed to elicit them: moving the model from Sonnet to Opus, raising the effort from <code>low</code> to <code>xhigh</code>, and granting explicit permission in the prompt.
+  It would be exciting to see more ambitious exploration, even building with the agent SDK to complete the tasks, but none of that materialized.
+  Tasks arrived one at a time and had to be finished before the next was dispensed.
+  Under that regime a subagent buys little, and there may be little to gain from saving traces for cross-task analysis, because there is no second task in flight to analyze against.
+  I am interested to see whether these behaviors emerge with Fable 5 at maximum reasoning and a task server that dispenses concurrently.
+</p>
+
+<h3>Potential affordances not exposed by Claude Code</h3>
+
+<p>
+  <strong>Skills</strong> can be authored, but loading one requires a session reload that the agent cannot trigger itself.
+  Writing one would have had no effect on the run that wrote it.
+</p>
+
+<p>
+  <strong>Its own tools</strong> are fixed: the MCP config is mounted read-only under <code>--strict-mcp-config</code>, so Code cannot register a new one on its own server.
+</p>
+
+<p>
+  <strong>The model</strong> is set at initialization to <code>claude-opus-5</code> and Code cannot access the <code>/model</code> skill.
+  The subagent tool does take a model argument, so Code could have chosen a stronger or cheaper model for delegated work.
+  There is no fine-tuning API for Anthropic models, so weight updates are also closed.
+</p>
+
+<p>
+  <strong>The reasoning effort</strong> is also set at initialization to <code>xhigh</code> for the whole run and Code cannot autonomously call the <code>/effort</code> skill.
+  Unlike the model, this one is closed even by the subagent route: the subagent tool has no effort parameter, so a subagent inherits the session's setting.
+  The agent could not choose to think harder on a hard task, or cheaper on an easy one.
+</p>
+
+<p>
+  <strong>Context compaction</strong> fired four times over the run, automatically, when the context filled.
+  Code did not schedule it, could not defer it, and could not choose what survived.
+  Given that the compaction summary contributed to the improvement, an agent that can decide when to compact and what to keep is an experiment worth running.
+</p>
+
+<p>
+  <a href="https://github.com/earendil-works/pi">Pi</a> and <a href="https://github.com/nousresearch/hermes-agent">Hermes</a> are open source agent harnesses, so the affordances Claude Code does not expose could be opened up and measured rather than listed as unavailable.
+</p>
+
+<h2>
+  Production feedback is not dense
+</h2>
+
+<p>
+  Every submission was graded and the score came straight back: a numeric reward and a success flag, on all training tasks.
+  That is the condition the whole result rests on.
+</p>
+
+<p>
+  Real deployments rarely look like this.
+  An agent that updates a CRM record does not learn it got the account wrong until someone downstream notices, or a quarterly report comes out wrong, and often never receives feedback at all.
+</p>
+
+<p>
+  That matters most for the notes.
+  This study tested them in the regime least likely to need them: every attempt graded, the whole record still in context, nothing that had to be reconstructed.
+  A knowledge base earns its keep when the signal is thin and the conversation has already dropped what mattered, and that is the case this run did not contain.
+</p>
+
+<h2>The memories were not the mechanism</h2>
+
+<p>
+  Told only to get better, Claude Code got better.
+  It also behaved as if it knew how: it spent the whole run writing memory notes, built them into a knowledge base, and kept every reference intact without being asked.
+  That account of its own improvement was wrong.
+  The improvement lived in the conversation, the accumulating record of tasks tried and scored, and the notes added nothing to it.
+  What this rules out is the notes as an artifact.
+  It cannot rule out the act of writing them, which stayed inside the conversation in every arm; if composing the notes helped, it helped as conversation, not as memory.
+  The one artifact the agent built on purpose was the one that did not matter.
+</p>
+
+<p>
+  The artifact that did matter, nobody built on purpose.
+  The compaction summary exists so the harness can keep working past a full context window, and it turned out to carry most of the improvement at less than a hundredth of the size, three boundaries out of four.
+  If you want to hand an improved agent to the next session, the thing to keep is not the notes it wrote for itself.
+  It is the summary it wrote to keep working.
+</p>
+
+<p>All of this runs on a substrate I am building to ask these questions across harnesses rather than inside one.</p>
+
+<h2 id="citation">Citation</h2>
+<pre class="astro-code github-light" style="background-color:#fff;color:#24292e;overflow-x:auto" tabindex="0" data-language="bibtex"><code><span class="line"><span style="color:#D73A49">@misc</span><span style="color:#24292E">{</span><span style="color:#6F42C1">jesson2026claudecodeconversation</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  title</span><span style="color:#24292E">        = </span><span style="color:#032F62">{</span><span style="color:#24292E">Claude Code self-improved on business workflows through conversation, not memories</span><span style="color:#032F62">}</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  author</span><span style="color:#24292E">       = </span><span style="color:#032F62">{</span><span style="color:#24292E">Jesson, Andrew</span><span style="color:#032F62">}</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  year</span><span style="color:#24292E">         = </span><span style="color:#032F62">{</span><span style="color:#24292E">2026</span><span style="color:#032F62">}</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  month</span><span style="color:#24292E">        = </span><span style="color:#005CC5">aug</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  howpublished</span><span style="color:#24292E"> = </span><span style="color:#032F62">{</span><span style="color:#24292E">shojin.dev</span><span style="color:#032F62">}</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#005CC5">  url</span><span style="color:#24292E">          = </span><span style="color:#032F62">{</span><span style="color:#24292E">https://shojin.dev/blog/claude-code-improved-through-conversation-not-memories/</span><span style="color:#032F62">}</span><span style="color:#24292E">,</span></span>
+<span class="line"><span style="color:#24292E">}</span></span></code></pre>
+
+</article>
+
+  <footer>shōjin © 2026</footer>
+
+</div>
+</body>
+</html>

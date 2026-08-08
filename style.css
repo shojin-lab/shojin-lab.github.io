@@ -14,7 +14,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font: 15px/1.65 ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font: 15px/1.65 "JetBrains Mono", ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   font-variant-ligatures: none;
 }
 .page {

@@ -118,11 +118,11 @@ article.post blockquote {
   color: var(--muted);
 }
 
-/* Same treatment as the nav links. */
+/* Same treatment as the nav links: a hairline in --muted, ink on hover. */
 article.post a {
   color: var(--ink);
   text-decoration: none;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--muted);
   padding-bottom: 1px;
 }
 article.post a:hover { border-bottom-color: var(--ink); }

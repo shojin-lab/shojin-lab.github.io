@@ -26,7 +26,7 @@
 These affordances are avenues for self-improvement because they can persist and be dynamically updated across a session.</p>
 
 <p>I instructed Code (Opus 5, <code>xhigh</code> effort) how to pull task descriptions (spreadsheets, CRM records, email, ticketing) from a simulated <a href="https://arxiv.org/abs/2604.18934">business workflow</a> server and told it to get better.
-It did: held-out success went from 34% to 48%.</p>
+It did: held-out success rose from 34% to 44%.</p>
 
 <pre class="astro-code"><code>Get Better.
 
@@ -77,35 +77,31 @@ A conversation full of graded attempts is the material in-context learning runs 
 <h2>Conversation drove the improvement, not memories</h2>
 
 <p>
-  The session led to improved performance. Where did that improvement come from?
+  In addition to the memory files, the session also produced a conversation trace.
+  A session resumed from any point in the conversation trace contains the following context:
+</p>
+
+<ol>
+  <li>the system prompt with memory file index inserted</li>
+  <li>the summary written at the last compaction, or nothing for the first stretch</li>
+  <li>every task executed and the feedback received</li>
+  <li>the thought content produced</li>
+  <li>the record of the memories written</li>
+</ol>
+
+<p>
+  The question of where the improvement comes from splits in two.
+  How much of the improvement survives in any subset of the resumed session context?
+  Are any elements of that context redundant?
 </p>
 
 <p>
-  The only artifact other than the memory files was the conversation trace.
-  It begins with the summary written at the last compaction, or with nothing at all for the first stretch, and holds everything until the next compaction: every task played, the thought content produced, and the record of every memory written.
-  So the question splits in two.
-  How much of the improvement survives in something smaller than the conversation?
-  And is anything inside the conversation doing work it could do without?
-</p>
-
-<p>
-  The first question is answered by handing a fresh session progressively more: nothing, then the summary written when the conversation was compacted, then the conversation itself.
-  The second by handing over the conversation with one thing removed, either the memory files or the thought content.
-  Each version gets the same 120 tasks the original run never saw, each task in its own session on the same model with the same tools, so nothing carries from one task to the next, and every comparison is made task by task.
-</p>
-
-<p>
-  Most of the improvement survives in the summary.
-  The memory files add nothing measurable, pooled across all nine comparisons.
-  What remains inside the conversation is the record of tasks played and scored, and the thought content produced along the way, and this study cannot attribute the improvement to either one: at the first stretch the conversation clears zero as a whole while neither part does alone.
-  What the thought content contributes falls steadily across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
-</p>
-
-<p>
-  Each row is one of those versions, set against a session that boots with nothing.
-  Every version of the conversation clears zero, whether the memory files or the thought content are stripped out of it.
-  So does the summary, for cents where the conversation costs dollars.
-  The memory files on their own are the one hollow point, the interval that does not clear zero.
+  The first question is answered by handing a new session progressively more: first nothing, then a summary written after compaction, then the full context between either the beginning and the first compaction or two compaction events.
+  The second by removing one thing from the conversation context, either the memory file index or the thought content.
+  Each version is validated on the same 120 held-out tasks.
+  Each task is run in its own session, on the same model with the same tools, so nothing carries from one task to the next.
+  Sessions are resumed at nine points: the beginning, and before and after each of the four compaction events.
+  Each row in the forest plot below shows the difference between one context setting and the setting with nothing, aggregated across the resumption points where that setting exists.
 </p>
 
 <figure class="aj-figure">
@@ -231,17 +227,30 @@ A conversation full of graded attempts is the material in-context learning runs 
   </figcaption>
 </figure>
 
+<p>
+  Every conversation setting clears zero, with or without the memory files, with or without the thought content.
+  Each compaction summary clears it too, for cents where the full conversation content costs dollars.
+  The memory files alone are the one hollow point, the interval that does not clear zero.
+</p>
 
 <p>
-  That pooled memory figure conceals a split worth stating, though it may be nothing.
-  Mounted on a conversation the files are neutral. Mounted alone, with no conversation and no summary, they are neutral.
+  The rows narrow ownership when read together.
+  Every setting that keeps the task record clears zero, and so does every setting that keeps the summary, which is the conversation compressed.
+  The settings that keep neither, the memory files alone and nothing at all, are the ones that fail.
+  What the thought content adds falls across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
+</p>
+
+<p>
+  The pooled memory figure conceals a split worth stating.
+  The memory files are neutral when mounted on a conversation.
+  They are also neutral when mounted on their own, with no conversation and no summary.
   Mounted on a summary they cost about three points, and all four boundaries point that way.
-  This is a division of the data chosen after seeing it, and it should be read as a hint rather than a result.
+  This division of the data was chosen after seeing these differences, so it should be read as a hint rather than a result.
 </p>
 
 <p>
   So the improvement is in the conversation, and a summary keeps most of it for cents.
-  What the extra dollars buy is fewer steps to the answer, not more of them.
+  What the extra dollars buy is fewer steps to the answer.
 </p>
 
 <h3>Across the run</h3>

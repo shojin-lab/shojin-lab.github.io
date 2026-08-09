@@ -26,7 +26,7 @@
 These affordances are avenues for self-improvement because they can persist and be dynamically updated across a session.</p>
 
 <p>I instructed Code (Opus 5, <code>xhigh</code> effort) how to pull task descriptions (spreadsheets, CRM records, email, ticketing) from a simulated <a href="https://arxiv.org/abs/2604.18934">business workflow</a> server and told it to get better.
-It did: held-out success went from 34% to 48%.</p>
+It did: resuming from the conversation is worth about ten points of held-out success over a 34% cold start, averaged across the four points in the run where the conversation was resumed.</p>
 
 <pre class="astro-code"><code>Get Better.
 
@@ -102,19 +102,6 @@ A conversation full of graded attempts is the material in-context learning runs 
   Each task is run in its own session, on the same model with the same tools, so nothing carries from one task to the next.
   Sessions are resumed at nine points: the beginning, and before and after each of the four compaction events.
   Each row in the forest plot below shows the difference between one version and a session that boots with nothing, aggregated across the resumption points where that version exists.
-</p>
-
-<p>
-  Most of the improvement survives in the summary.
-  The memory files add nothing measurable, pooled across all nine comparisons.
-  What remains inside the conversation is the record of tasks played and scored, and the thought content produced along the way, and this study cannot attribute the improvement to either one: at the first stretch the conversation clears zero as a whole while neither part does alone.
-  What the thought content contributes falls steadily across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
-</p>
-
-<p>
-  Every version of the conversation clears zero, whether the memory files or the thought content are stripped out of it.
-  So does the summary, for cents where the conversation costs dollars.
-  The memory files on their own are the one hollow point, the interval that does not clear zero.
 </p>
 
 <figure class="aj-figure">
@@ -240,6 +227,18 @@ A conversation full of graded attempts is the material in-context learning runs 
   </figcaption>
 </figure>
 
+<p>
+  Most of the improvement survives in the summary.
+  The memory files add nothing measurable, pooled across all nine comparisons.
+  What remains inside the conversation is the record of tasks played and scored, and the thought content produced along the way, and this study cannot attribute the improvement to either one: at the first stretch the conversation clears zero as a whole while neither part does alone.
+  What the thought content contributes falls steadily across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
+</p>
+
+<p>
+  Every version of the conversation clears zero, whether the memory files or the thought content are stripped out of it.
+  So does the summary, for cents where the conversation costs dollars.
+  The memory files on their own are the one hollow point, the interval that does not clear zero.
+</p>
 
 <p>
   The pooled memory figure conceals a split worth stating.

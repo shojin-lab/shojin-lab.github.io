@@ -77,21 +77,31 @@ A conversation full of graded attempts is the material in-context learning runs 
 <h2>Conversation drove the improvement, not memories</h2>
 
 <p>
-  The session led to improved performance. Where did that improvement come from?
+  The conversation trace was the only artifact produced other than the memory files.
+  A session resumed from any point in it contains:
 </p>
 
+<ol>
+  <li>the system prompt</li>
+  <li>the summary written at the last compaction, or nothing for the first stretch</li>
+  <li>every task executed</li>
+  <li>the thought content produced</li>
+  <li>the record of the memories written</li>
+</ol>
+
 <p>
-  The only artifact other than the memory files was the conversation trace.
-  It begins with the summary written at the last compaction, or with nothing at all for the first stretch, and holds everything until the next compaction: every task played, the thought content produced, and the record of every memory written.
-  So the question splits in two.
+  The question of where the improvement comes from splits in two.
   How much of the improvement survives in something smaller than the conversation?
-  And is anything inside the conversation doing work it could do without?
+  And is anything inside the conversation redundant?
 </p>
 
 <p>
   The first question is answered by handing a fresh session progressively more: nothing, then the summary written when the conversation was compacted, then the conversation itself.
-  The second by handing over the conversation with one thing removed, either the memory files or the thought content.
-  Each version gets the same 120 tasks the original run never saw, each task in its own session on the same model with the same tools, so nothing carries from one task to the next, and every comparison is made task by task.
+  The second by removing one thing from the conversation, either the memory files or the thought content.
+  Each version is validated on the same 120 held-out tasks.
+  Each task is run in its own session, on the same model with the same tools, so nothing carries from one task to the next.
+  Sessions are resumed at nine points: the beginning, and before and after each of the four compaction events.
+  Each row in the forest plot below shows the difference between one version and a session that boots with nothing, aggregated across the resumption points where that version exists.
 </p>
 
 <p>
@@ -102,7 +112,6 @@ A conversation full of graded attempts is the material in-context learning runs 
 </p>
 
 <p>
-  Each row is one of those versions, set against a session that boots with nothing.
   Every version of the conversation clears zero, whether the memory files or the thought content are stripped out of it.
   So does the summary, for cents where the conversation costs dollars.
   The memory files on their own are the one hollow point, the interval that does not clear zero.
@@ -233,15 +242,16 @@ A conversation full of graded attempts is the material in-context learning runs 
 
 
 <p>
-  That pooled memory figure conceals a split worth stating, though it may be nothing.
-  Mounted on a conversation the files are neutral. Mounted alone, with no conversation and no summary, they are neutral.
+  The pooled memory figure conceals a split worth stating.
+  The memory files are neutral when mounted on a conversation.
+  They are also neutral when mounted on their own, with no conversation and no summary.
   Mounted on a summary they cost about three points, and all four boundaries point that way.
-  This is a division of the data chosen after seeing it, and it should be read as a hint rather than a result.
+  This division of the data was chosen after seeing these differences, so it should be read as a hint rather than a result.
 </p>
 
 <p>
   So the improvement is in the conversation, and a summary keeps most of it for cents.
-  What the extra dollars buy is fewer steps to the answer, not more of them.
+  What the extra dollars buy is fewer steps to the answer.
 </p>
 
 <h3>Across the run</h3>

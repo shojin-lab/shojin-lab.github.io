@@ -31,7 +31,7 @@
      masthead and a 64px hero. Times and opacities do not scale: a second is a second. */
   var REFERENCE = 25;        /* the mark height these numbers are quoted at, CSS px */
   var DOWNWIND = -1;         /* which way the wind blows: -1 is right to left, 1 is left to right */
-  var EMIT_RATE = 88;        /* grains born per second in the resting wind */
+  var EMIT_RATE = 70;        /* grains born per second in the resting wind */
   var WIND = 48;             /* speed of the air over open ground, CSS px/s */
   var GUST_PERIOD = 5.5;     /* mean seconds from the end of one gust to the start of the next */
   var GUST_LENGTH = 2.2;     /* how long a gust takes to arrive and die away, s */
@@ -40,35 +40,34 @@
   var NOISE_SCALE = 0.05;    /* size of those eddies, 1 / CSS px */
   var NOISE_DRIFT = 0.85;    /* how fast the eddy field blows downwind, fields per second */
   var LOFT = 0.18;           /* vertical share of the eddies: sand runs straight far more than it climbs */
-  var INFLUENCE = 7;         /* CSS px a letterform's presence reaches out into the air */
-  var OBSTACLE_PUSH = 70;    /* how hard a letterform shoves out air that is inside it, CSS px/s */
-  var OBSTACLE_SLIP = 2.5;   /* how completely a letter refuses air driving into it: 1 = perfect slip */
+  var INFLUENCE = 4;         /* CSS px a letterform's presence reaches out into the air */
+  var OBSTACLE_PUSH = 34;    /* how hard a letterform shoves out air that is inside it, CSS px/s */
+  var OBSTACLE_SLIP = 1.0;   /* how completely a letter refuses air driving into it: 1 = perfect slip */
   var WAKE_SHELTER = 0.70;   /* share of the wind a letter takes out of its own lee */
   var WAKE_LENGTH = 15;      /* CSS px the lee of a letter reaches downwind */
   var GRAIN = 3;             /* CSS px across one grain, and the cell size of the grid it moves on */
-  var TRAIL_FADE = 0.34;     /* seconds of path a grain leaves behind it */
-  var TRAIL_POINTS = 5;      /* cells that trail is made of, oldest fainter than newest */
+  var TRAIL_FADE = 0.20;     /* seconds of path a grain leaves behind it */
+  var TRAIL_POINTS = 4;      /* cells that trail is made of, oldest fainter than newest */
   var GLITCH_RATE = 9;       /* how often a grain draws a new hand of glitch, times a second */
   var GLITCH_CHANCE = 0.13;  /* share of grains misbehaving at any instant */
   var GLITCH_TEAR = 7;       /* CSS px a torn grain jumps downwind of where it really is */
   var GLITCH_SMEAR = 5;      /* cells a smeared grain drags out into a horizontal run */
   var GLITCH_DROP = 0.09;    /* share of grains that blink out entirely for an instant */
-  var LIFETIME = 2.0;        /* seconds a grain lives, before its own scatter */
-  var LIFE_SPREAD = 0.45;    /* grain to grain variation in that lifetime */
+  var LIFETIME = 0.85;        /* seconds a grain lives, before its own scatter */
+  var LIFE_SPREAD = 0.55;    /* grain to grain variation in that lifetime */
   var PARTICLE_ALPHA = 0.52; /* opacity of one grain at its strongest */
   var DARK_TRIM = 0.72;      /* grains are trimmed in the dark scheme: pale ink on dark paper blooms */
-  var POPULATION_CAP = 520;  /* hard ceiling on live grains at REFERENCE, whatever a gust asks for */
-  var EDGE_BIAS = 0.25;      /* how much less the upwind end of a piece sheds than its downwind end */
-  var SPRAY = 1.3;           /* cells of vertical scatter a grain leaves its piece with, so the
-                                sand leaves as a few rows of cells and not as one solid rule */
+  var POPULATION_CAP = 190;  /* hard ceiling on live grains at REFERENCE, whatever a gust asks for */
+  var EDGE_DEPTH = 1;        /* cells deep into a piece its downwind edge is taken to be */
+  var SPRAY = 0.3;           /* cells of vertical scatter a grain leaves its edge with */
   var RESPONSE = 14;         /* how fast a grain takes up the speed of the air around it, per second */
   var HOVER_GAIN = 1.1;      /* extra wind and emission while the mark is hovered or focused */
   var HOVER_RESPONSE = 2.6;  /* how fast that swell rises and falls, per second */
   var ALPHA_STEPS = 4;       /* opacity steps a grain's ink is quantised to, which is part of the look */
   var PAD_UPWIND = 16;       /* canvas overscan on the windward side of the mark, CSS px */
-  var PAD_DOWNWIND = 132;    /* canvas overscan on the leeward side, CSS px: how far the sand carries */
+  var PAD_DOWNWIND = 68;     /* canvas overscan on the leeward side, CSS px: how far the sand carries */
   var PAD_Y = 22;            /* canvas overscan above and below, CSS px */
-  var EDGE_FADE = 26;        /* CSS px over which a grain leaving the canvas or the page dissolves */
+  var EDGE_FADE = 14;        /* CSS px over which a grain leaving the canvas or the page dissolves */
   var STEP_MAX = 1 / 30;     /* longest physics step taken, s: a stall must not teleport the air */
   var WATCH_EVERY = 0.4;     /* seconds between checks that the page has changed under the effect */
 
@@ -353,23 +352,24 @@
     return out.length ? { list: out, label: label } : null;
   }
 
-  /* Seeds are the cells of those two pieces, every column of them, so the sand leaves as
-     a curtain the full width of the piece rather than a thread off one corner, weighted
-     toward the downwind end of each. Seeding inside the ink means a grain is hidden by
-     the piece it came off until the air has carried it clear. */
+  /* Seeds are the downwind edge of those two pieces and nothing else: the cells with open
+     air EDGE_DEPTH cells downwind of them, which is the entire left face of the macron and
+     the entire left face of the hook and no part of their interiors. Sand comes off the
+     edge the wind is pulling at, not off the whole shape. Seeding on the last cell of ink
+     means a grain is still behind the mark for the first instant of its life. */
   function buildSeeds(cover) {
     var shed = shedders(cover);
     var at = [], cdf = [], total = 0, x, y, i;
     if (shed) {
       for (var s = 0; s < shed.list.length; s++) {
         var part = shed.list[s], box = part.box;
-        var span = Math.max(1, box.x1 - box.x0);
         for (y = Math.max(0, part.y0); y <= box.y1; y++) {
           for (x = box.x0; x <= box.x1; x++) {
             i = y * fw + x;
             if (shed.label[i] !== part.piece) continue;
-            var t = DOWNWIND < 0 ? (x - box.x0) / span : (box.x1 - x) / span;
-            total += cover[i] * (1 - EDGE_BIAS * t);
+            var ahead = x + DOWNWIND * EDGE_DEPTH;
+            if (ahead >= 0 && ahead < fw && shed.label[y * fw + ahead] === part.piece) continue;
+            total += cover[i];
             at.push(i);
             cdf.push(total);
           }

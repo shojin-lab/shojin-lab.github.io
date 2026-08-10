@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/style.css?v=5">
-<link rel="stylesheet" href="/post.css?v=3">
+<link rel="stylesheet" href="/post.css?v=4">
 </head>
 <body>
 <div class="page post-page">
@@ -50,8 +50,7 @@ Nothing external loops for you - drive yourself:
 
 <p>The only artifacts produced outside of the conversation history were memory notes, so I assumed that they were a driver of improvement.
 However, their inclusion had no measurable effect on held-out task success.
-Instead, conversation drove the self-improvement: the task execution traces and post-compaction summaries.
-A conversation full of graded attempts is the material in-context learning runs on, which is the most plausible reason the notes added nothing.</p>
+Instead, conversation drove the self-improvement: the task execution traces and post-compaction summaries.</p>
 
 <h2>Claude Code used memories to build a directed knowledge base</h2>
 
@@ -87,7 +86,7 @@ A conversation full of graded attempts is the material in-context learning runs 
 
 <p>
   In addition to the memory files, the session also produced a conversation trace.
-  A session resumed from any point in the conversation trace contains the following context:
+  A session resumed from any point in the conversation trace contains the following context up to that point:
 </p>
 
 <ol>
@@ -100,8 +99,8 @@ A conversation full of graded attempts is the material in-context learning runs 
 
 <p>
   The question of where the improvement comes from splits in two.
-  How much of the improvement survives in any subset of the resumed session context?
-  Are any elements of that context redundant?
+  1) How much of the improvement survives in any subset of the resumed session context?
+  2) Are any elements of that context redundant?
 </p>
 
 <p>
@@ -237,29 +236,22 @@ A conversation full of graded attempts is the material in-context learning runs 
 </figure>
 
 <p>
-  Every conversation setting clears zero, with or without the memory files, with or without the thought content.
+  Every conversation setting clears zero, with or without the memory files and with or without the thought content.
   Each compaction summary clears it too, for cents where the full conversation content costs dollars.
-  The memory files alone are the one hollow point, the interval that does not clear zero.
+  The memory files alone are the one hollow point with an interval that does not clear zero.
 </p>
 
 <p>
-  The rows narrow ownership when read together.
+  The settings narrow ownership when read together.
   Every setting that keeps the task record clears zero, and so does every setting that keeps the summary, which is the conversation compressed.
   The settings that keep neither, the memory files alone and nothing at all, are the ones that fail.
   What the thought content adds falls across the run, and is smallest at the fourth boundary, where the conversation itself is strongest.
 </p>
 
 <p>
-  The pooled memory figure conceals a split worth stating.
-  The memory files are neutral when mounted on a conversation.
-  They are also neutral when mounted on their own, with no conversation and no summary.
-  Mounted on a summary they cost about three points, and all four boundaries point that way.
-  This division of the data was chosen after seeing these differences, so it should be read as a hint rather than a result.
-</p>
-
-<p>
   So the improvement is in the conversation, and a summary keeps most of it for cents.
   What the extra dollars buy is fewer steps to the answer.
+  The memory files are redundant and the influence of thought content decays as the session progresses.
 </p>
 
 <h3>Across the run</h3>
@@ -278,17 +270,22 @@ A conversation full of graded attempts is the material in-context learning runs 
   For the first three boundaries the summary keeps pace with the conversation it replaced, giving up 1.7, 3.4, and 0.8 points, none of them distinguishable from zero, on a few thousand tokens against the conversation's nine hundred thousand.
   At the fourth it gives up 11.7, 95% CI [&minus;19.8, &minus;3.6].
   Twenty of the tasks that conversation solved did not survive its summary, and what did survive is worth +2.5 over a cold start, which is not distinguishable from starting fresh.
-</p>
-
-<p>
-  This is not a run that had stopped learning.
   The conversation at that boundary was working as well as at any earlier one. The summary written from it was not.
+  The summary may be a less robust carrier of the improvement than the conversation it compresses.
 </p>
 
 <p>
   The thought content runs the other way.
   It is worth +4.2, +2.6, +0.8, and &minus;0.8 points across the four boundaries, a steady fall to nothing.
-  It is between 5.6% and 8.1% of the conversation by tokens, and by the last boundary the record of tasks played appears to carry whatever it was contributing early.
+  It is between 5.6% and 8.1% of the conversation by tokens, and by the last boundary the rest of the conversation appears to carry whatever the thoughts were contributing early.
+</p>
+
+<p>
+  The pooled memory figure conceals a split worth stating.
+  The memory files are neutral when mounted on a conversation.
+  They are also neutral when mounted on their own, with no conversation and no summary.
+  Mounted on a summary they cost about three points, and all four boundaries point that way.
+  This division of the data was chosen after seeing these differences, so it should be read as a hint rather than a result.
 </p>
 
 <h3>What the agent did with the notes</h3>
@@ -311,7 +308,7 @@ A conversation full of graded attempts is the material in-context learning runs 
 <h2>Avenues of self-improvement that were not used</h2>
 
 <p>
-  The unused affordances were not missing, and the agent was not forbidden.
+  The unused affordances were not missing and the agent was not forbidden to use them.
   Code execution, subagents, and web search were validated as available for the whole run, and three interventions failed to elicit them: moving the model from Sonnet to Opus, raising the effort from <code>low</code> to <code>xhigh</code>, and granting explicit permission in the prompt.
   It would be exciting to see more ambitious exploration, even building with the agent SDK to complete the tasks, but none of that materialized.
   Tasks arrived one at a time and had to be finished before the next was dispensed.
@@ -349,7 +346,7 @@ A conversation full of graded attempts is the material in-context learning runs 
 </p>
 
 <p>
-  <a href="https://github.com/earendil-works/pi">Pi</a> and <a href="https://github.com/nousresearch/hermes-agent">Hermes</a> are open source agent harnesses, so the affordances Claude Code does not expose could be opened up and measured rather than listed as unavailable.
+  <a href="https://github.com/earendil-works/pi">Pi</a>, <a href="https://github.com/nousresearch/hermes-agent">Hermes</a>, and <a href="https://github.com/PrimeIntellect-ai/prime-agent">Prime Agent</a> are open source agent harnesses, so the affordances Claude Code does not expose could be opened up and measured rather than listed as unavailable.
 </p>
 
 <h2>
@@ -367,9 +364,9 @@ A conversation full of graded attempts is the material in-context learning runs 
 </p>
 
 <p>
-  That matters most for the notes.
-  This study tested them in the regime least likely to need them: every attempt graded, the whole record still in context, nothing that had to be reconstructed.
-  A knowledge base earns its keep when the signal is thin and the conversation has already dropped what mattered, and that is the case this run did not contain.
+  The open question is what improvement remains as the feedback signal thins.
+  Every number here was measured under immediate grading of every attempt.
+  A run scored on one task in ten, or scored a week later, may improve less, or not at all, and the part of the context that carries it need not be the same part.
 </p>
 
 <h2>The memories were not the mechanism</h2>
@@ -385,7 +382,8 @@ A conversation full of graded attempts is the material in-context learning runs 
 </p>
 
 <p>
-  The artifact that did matter, nobody built on purpose.
+  The artifacts that did matter were built for different reasons.
+  The conversation is the session's own working record.
   The compaction summary exists so the harness can keep working past a full context window, and it turned out to carry most of the improvement at less than a hundredth of the size, three boundaries out of four.
   If you want to hand an improved agent to the next session, the thing to keep is not the notes it wrote for itself.
   It is the summary it wrote to keep working.

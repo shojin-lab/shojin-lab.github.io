@@ -44,12 +44,13 @@ header {
   width: auto;
   display: block;
 }
-/* sand.js lays a grain canvas over the mark. The image stays in flow: it holds the
-   layout and carries the accessible name, and it is what shows with no JS or under
-   reduced motion. The canvas overhangs its box so grains can blow off the mark. */
-.wordmark { position: relative; }
-.wordmark .sand { position: absolute; pointer-events: none; }
-.wordmark.sand-on img { opacity: 0; }
+/* sand.js lays a wisp canvas *under* the mark. The image is untouched: it holds the
+   layout, carries the accessible name, is what shows with no JS or under reduced
+   motion, and stays exactly as crisp as the browser draws the SVG. The z-index on the
+   anchor makes it a stacking context, so the canvas can sit behind the image and still
+   be above the page background; it overhangs its box so wisps can stream off downwind. */
+.wordmark { position: relative; z-index: 0; }
+.wordmark .sand { position: absolute; z-index: -1; pointer-events: none; }
 /* The underline is a hairline, but it carries --muted rather than --rule: --rule is a
    hairline against the paper (1.3:1) and reads as nothing, while --muted is the tone the
    dates and the footer already use, so a link is as legible as a datestamp. */

@@ -44,6 +44,12 @@ header {
   width: auto;
   display: block;
 }
+/* sand.js lays a grain canvas over the mark. The image stays in flow: it holds the
+   layout and carries the accessible name, and it is what shows with no JS or under
+   reduced motion. The canvas overhangs its box so grains can blow off the mark. */
+.wordmark { position: relative; }
+.wordmark .sand { position: absolute; pointer-events: none; }
+.wordmark.sand-on img { opacity: 0; }
 /* The underline is a hairline, but it carries --muted rather than --rule: --rule is a
    hairline against the paper (1.3:1) and reads as nothing, while --muted is the tone the
    dates and the footer already use, so a link is as legible as a datestamp. */

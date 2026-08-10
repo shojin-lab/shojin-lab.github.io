@@ -194,8 +194,10 @@ figure.aj-figure.aj-wide {
   transform: translateX(-50%);
 }
 
+/* The graph reserves a band at each end of its frame for its own header and footer, so a
+   portrait frame needs the height back to leave the graph itself legible. */
 @media (max-width: 40rem) {
-  figure.aj-figure iframe { height: 380px; }
+  figure.aj-figure iframe { height: 460px; }
 }
 
 /* ------------------------------------------------------- forest plot colours */

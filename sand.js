@@ -1,24 +1,27 @@
-/* Digital sand: the wordmark stands in a wind and makes the weather visible.
+/* Digital sand: two loose pieces of the wordmark blow away in the wind, and the rest of
+   it stands in that wind and shapes it.
 
-   The mark itself never moves and never erodes. It is the plain <img>, painted above the
-   canvas, so it is exactly as crisp as it is with this script switched off. What the
-   letters do is generate and obstruct.
+   The mark never moves and never erodes. It is the plain <img>, painted above the canvas,
+   so it is exactly as crisp as it is with this script switched off.
 
-   Generate: grains a fraction of a pixel across and barely there are born under the
-   letterforms, weighted toward the downwind side of every stroke, so they peel off the
-   left of the mark and blow away right to left.
+   Shedding: only two pieces of the mark give up sand, the macron over the o and the hook
+   of the j, both found by flood filling the mask rather than written down. Grains are
+   born across the entire width of each piece, weighted toward its downwind end, and are
+   hidden by the piece they came off until the air has carried them clear.
 
-   Obstruct: a signed distance field of the rasterised mark gives every point in the air
-   an outward normal for the nearest stroke and a sense of how close that stroke is. The
-   flow is base wind, minus whatever part of it would drive into a letter, plus a shove
-   out of any letter the air is inside, plus curl noise for eddies, all of it slackened
-   in the lee that each letter casts downwind. Streamlines part around the letters and
-   wakes trail behind them.
+   Standing: a signed distance field of the whole rasterised mark gives every point in the
+   air an outward normal for the nearest stroke and a sense of how close it is. The flow is
+   base wind, minus whatever part of it would drive into a letter, plus a shove out of any
+   letter the air is inside, plus curl noise for eddies, all of it slackened in the lee
+   each letter casts downwind. So the sand off the macron has to get past the h and the s.
 
-   Each grain keeps a fraction of a second of its own path and redraws it every frame as one
-   hairline polyline, which is what turns a grain into a wisp. The canvas is cleared
-   outright each time, so nothing of the page behind it is ever tinted. With no JS, or
-   with reduced motion, the <img> is all there is and no canvas is created. */
+   Grains are drawn as whole cells of the same two pixel grid the Game of Life background
+   uses, never antialiased and never moving by less than a cell, and they glitch: some
+   tear downwind of where they are, some smear into a run of cells, some drop out for an
+   instant. A grain's trail is the cells it stood in a few sample times ago.
+
+   The canvas is cleared outright every frame, so nothing of the page behind it is ever
+   tinted. With no JS, or with reduced motion, the <img> is all there is. */
 (function () {
   "use strict";
 
@@ -28,39 +31,44 @@
      masthead and a 64px hero. Times and opacities do not scale: a second is a second. */
   var REFERENCE = 25;        /* the mark height these numbers are quoted at, CSS px */
   var DOWNWIND = -1;         /* which way the wind blows: -1 is right to left, 1 is left to right */
-  var EMIT_RATE = 78;        /* wisps born per second in the resting wind */
+  var EMIT_RATE = 88;        /* grains born per second in the resting wind */
   var WIND = 48;             /* speed of the air over open ground, CSS px/s */
   var GUST_PERIOD = 5.5;     /* mean seconds from the end of one gust to the start of the next */
   var GUST_LENGTH = 2.2;     /* how long a gust takes to arrive and die away, s */
   var GUST_AMPLITUDE = 0.85; /* extra wind and emission at the peak of a gust, as a share of the rest */
-  var TURBULENCE = 25;       /* speed of the eddies in the noise field, CSS px/s */
+  var TURBULENCE = 13;       /* speed of the eddies in the noise field, CSS px/s */
   var NOISE_SCALE = 0.05;    /* size of those eddies, 1 / CSS px */
   var NOISE_DRIFT = 0.85;    /* how fast the eddy field blows downwind, fields per second */
-  var LOFT = 0.55;           /* vertical share of the eddies: sand streaks more than it climbs */
+  var LOFT = 0.18;           /* vertical share of the eddies: sand runs straight far more than it climbs */
   var INFLUENCE = 7;         /* CSS px a letterform's presence reaches out into the air */
   var OBSTACLE_PUSH = 70;    /* how hard a letterform shoves out air that is inside it, CSS px/s */
   var OBSTACLE_SLIP = 2.5;   /* how completely a letter refuses air driving into it: 1 = perfect slip */
   var WAKE_SHELTER = 0.70;   /* share of the wind a letter takes out of its own lee */
   var WAKE_LENGTH = 15;      /* CSS px the lee of a letter reaches downwind */
-  var TRAIL_FADE = 0.50;     /* seconds of path drawn behind a wisp, tapering to nothing */
-  var TRAIL_POINTS = 7;      /* samples that tail is made of: more is smoother and dearer */
-  var TRAIL_TAPER = 0.5;     /* share of a wisp's ink laid along its whole tail; the rest goes
-                                on the half nearest the head, which is what makes it a comet */
-  var LIFETIME = 2.0;        /* seconds a wisp lives, before its own scatter */
-  var LIFE_SPREAD = 0.45;    /* wisp to wisp variation in that lifetime */
-  var PARTICLE_ALPHA = 0.34; /* ink one wisp lays per CSS px of its length, at its strongest */
-  var ALPHA_CEILING = 0.86;  /* however fine the screen's pixels are, a wisp is never solid */
-  var DARK_TRIM = 0.72;      /* wisps are trimmed in the dark scheme: pale ink on dark paper blooms */
-  var POPULATION_CAP = 420;  /* hard ceiling on live wisps at REFERENCE, whatever a gust asks for */
-  var EDGE_BIAS = 0.55;      /* 0 = wisps leave the whole letterform, 1 = only its downwind edges */
-  var RESPONSE = 14;         /* how fast a wisp takes up the speed of the air around it, per second */
+  var GRAIN = 3;             /* CSS px across one grain, and the cell size of the grid it moves on */
+  var TRAIL_FADE = 0.34;     /* seconds of path a grain leaves behind it */
+  var TRAIL_POINTS = 5;      /* cells that trail is made of, oldest fainter than newest */
+  var GLITCH_RATE = 9;       /* how often a grain draws a new hand of glitch, times a second */
+  var GLITCH_CHANCE = 0.13;  /* share of grains misbehaving at any instant */
+  var GLITCH_TEAR = 7;       /* CSS px a torn grain jumps downwind of where it really is */
+  var GLITCH_SMEAR = 5;      /* cells a smeared grain drags out into a horizontal run */
+  var GLITCH_DROP = 0.09;    /* share of grains that blink out entirely for an instant */
+  var LIFETIME = 2.0;        /* seconds a grain lives, before its own scatter */
+  var LIFE_SPREAD = 0.45;    /* grain to grain variation in that lifetime */
+  var PARTICLE_ALPHA = 0.52; /* opacity of one grain at its strongest */
+  var DARK_TRIM = 0.72;      /* grains are trimmed in the dark scheme: pale ink on dark paper blooms */
+  var POPULATION_CAP = 520;  /* hard ceiling on live grains at REFERENCE, whatever a gust asks for */
+  var EDGE_BIAS = 0.25;      /* how much less the upwind end of a piece sheds than its downwind end */
+  var SPRAY = 1.3;           /* cells of vertical scatter a grain leaves its piece with, so the
+                                sand leaves as a few rows of cells and not as one solid rule */
+  var RESPONSE = 14;         /* how fast a grain takes up the speed of the air around it, per second */
   var HOVER_GAIN = 1.1;      /* extra wind and emission while the mark is hovered or focused */
   var HOVER_RESPONSE = 2.6;  /* how fast that swell rises and falls, per second */
-  var ALPHA_STEPS = 8;       /* opacity buckets, so a frame of wisps costs a handful of strokes */
+  var ALPHA_STEPS = 4;       /* opacity steps a grain's ink is quantised to, which is part of the look */
   var PAD_UPWIND = 16;       /* canvas overscan on the windward side of the mark, CSS px */
-  var PAD_DOWNWIND = 132;    /* canvas overscan on the leeward side, CSS px: how far wisps carry */
+  var PAD_DOWNWIND = 132;    /* canvas overscan on the leeward side, CSS px: how far the sand carries */
   var PAD_Y = 22;            /* canvas overscan above and below, CSS px */
-  var EDGE_FADE = 26;        /* CSS px over which a wisp leaving the canvas or the page dissolves */
+  var EDGE_FADE = 26;        /* CSS px over which a grain leaving the canvas or the page dissolves */
   var STEP_MAX = 1 / 30;     /* longest physics step taken, s: a stall must not teleport the air */
   var WATCH_EVERY = 0.4;     /* seconds between checks that the page has changed under the effect */
 
@@ -75,7 +83,7 @@
   var dpr = 1, k = 1, markW = 0, markH = 0, totalW = 0, totalH = 0;
   var padA = 0, padB = 0, padY = 0;   /* canvas overscan around the mark, CSS px */
   var cap = 0;               /* POPULATION_CAP for the size the mark actually is */
-  var floorX = 0, ceilX = 0; /* canvas x where the page begins and ends, so wisps leave rather than clip */
+  var floorX = 0, ceilX = 0; /* canvas x where the page begins and ends, so grains leave rather than clip */
   var ink = "#1a1a1a";
   var raf = 0, prev = 0, clock = 0, emitAcc = 0;
   var hover = 0, hovered = false, onScreen = true, watchAcc = 0;
@@ -83,16 +91,16 @@
 
   /* the steady flow, one sample per CSS px of canvas, in CSS px/s */
   var fw = 0, fh = 0, flowX = null, flowY = null;
-  /* where wisps are born: cell indices into the same grid, with a cumulative weight */
+  /* where grains are born: cell indices into the same grid, with a cumulative weight */
   var seedAt = null, seedCdf = null, seedTotal = 0;
 
-  /* live wisps, as parallel arrays so a frame allocates nothing */
-  var px, py, vx, vy, age, life, amp, live = 0;
-  /* the tail: a ring of TRAIL_POINTS - 1 past positions per wisp, sampled on a clock so
-     the tail is the same length in seconds whatever the refresh rate is */
+  /* live grains, as parallel arrays so a frame allocates nothing */
+  var px, py, vx, vy, age, life, amp, tag, live = 0;
+  /* the trail: a ring of TRAIL_POINTS - 1 past positions per grain, sampled on a clock so
+     it is the same length in seconds whatever the refresh rate is */
   var hx, hy, tail = 0, head = 0, sampleAcc = 0, sampleEvery = 0;
-  /* one path per opacity step, for whole tails and for their near halves */
-  var bucket = [], nearer = [], nearTail = 0;
+  /* one list of grid cells per opacity step, filled and filled out once a frame */
+  var bucket = [];
 
   /* --- cheap value noise: an integer hash on a lattice, smoothstepped ------- */
   function hash(x, y) {
@@ -269,24 +277,109 @@
         flowY[i] = wy + OBSTACLE_PUSH * k * dense[i] * ny;
       }
     }
-    return soft;
   }
 
-  /* --- where wisps come from ----------------------------------------------- */
-  /* Only from inside the letterform, so a wisp is hidden by the mark until it has left
-     it, and mostly from the downwind side of a stroke, where the air is letting go. */
-  function buildSeeds(cover, soft) {
-    var at = [], cdf = [], total = 0;
-    for (var y = 1; y < fh - 1; y++) {
-      for (var x = 1; x < fw - 1; x++) {
-        var i = y * fw + x;
+  /* --- which parts of the mark shed ---------------------------------------- */
+  /* Not the whole wordmark: two loose pieces of it. Both are found from the mask rather
+     than written down, so they survive the mark being re-cut or re-sized.
+
+     Every ink cell is flood filled into a component, which for this wordmark gives nine:
+     s, h, the o ring, its macron, the i stem and its dot, the j body and its dot, and n.
+
+     The macron is the one component that is much wider than it is tall and sits in the
+     upper half. Nothing else in the mark is a bar.
+
+     The hook is the tail of the j, and the j is the only glyph with a descender, so the
+     component that reaches deepest is the j and the baseline is where every other
+     component stops. The hook is what that component has below that line. */
+  function pieces(cover) {
+    var n = fw * fh, label = new Int32Array(n), stack = new Int32Array(n), boxes = [];
+    var i, x, y, c = 0;
+    for (i = 0; i < n; i++) label[i] = cover[i] >= 0.5 ? -1 : -2;
+    for (y = 0; y < fh; y++) {
+      for (x = 0; x < fw; x++) {
+        if (label[y * fw + x] !== -1) continue;
+        var top = 0, box = { x0: x, x1: x, y0: y, y1: y, cells: 0 };
+        stack[top++] = y * fw + x;
+        label[y * fw + x] = c;
+        while (top > 0) {
+          var p = stack[--top], pxx = p % fw, pyy = (p / fw) | 0;
+          box.cells++;
+          if (pxx < box.x0) box.x0 = pxx;
+          if (pxx > box.x1) box.x1 = pxx;
+          if (pyy < box.y0) box.y0 = pyy;
+          if (pyy > box.y1) box.y1 = pyy;
+          for (var dy = -1; dy <= 1; dy++) {          /* eight ways, so a diagonal of
+                                                         antialiased ink stays one piece */
+            for (var dx = -1; dx <= 1; dx++) {
+              var qx = pxx + dx, qy = pyy + dy;
+              if (qx < 0 || qy < 0 || qx >= fw || qy >= fh) continue;
+              var q = qy * fw + qx;
+              if (label[q] !== -1) continue;
+              label[q] = c;
+              stack[top++] = q;
+            }
+          }
+        }
+        boxes.push(box);
+        c++;
+      }
+    }
+    return { label: label, boxes: boxes };
+  }
+
+  function shedders(cover) {
+    var found = pieces(cover), boxes = found.boxes, label = found.label;
+    var out = [], i, b;
+    if (!boxes.length) return out;
+
+    var mid = 0, bar = -1, best = 0;
+    for (i = 0; i < boxes.length; i++) mid += (boxes[i].y0 + boxes[i].y1) / 2;
+    mid /= boxes.length;
+    for (i = 0; i < boxes.length; i++) {
+      b = boxes[i];
+      var wide = (b.x1 - b.x0 + 1) / (b.y1 - b.y0 + 1);
+      if ((b.y0 + b.y1) / 2 < mid && wide > best && wide >= 2) { best = wide; bar = i; }
+    }
+    if (bar >= 0) out.push({ piece: bar, y0: boxes[bar].y0, box: boxes[bar] });
+
+    var deep = 0;
+    for (i = 1; i < boxes.length; i++) if (boxes[i].y1 > boxes[deep].y1) deep = i;
+    var baseline = 0;
+    for (i = 0; i < boxes.length; i++) if (i !== deep && boxes[i].y1 > baseline) baseline = boxes[i].y1;
+    if (boxes[deep].y1 > baseline + 1) {
+      out.push({ piece: deep, y0: baseline, box: boxes[deep] });
+    }
+    return out.length ? { list: out, label: label } : null;
+  }
+
+  /* Seeds are the cells of those two pieces, every column of them, so the sand leaves as
+     a curtain the full width of the piece rather than a thread off one corner, weighted
+     toward the downwind end of each. Seeding inside the ink means a grain is hidden by
+     the piece it came off until the air has carried it clear. */
+  function buildSeeds(cover) {
+    var shed = shedders(cover);
+    var at = [], cdf = [], total = 0, x, y, i;
+    if (shed) {
+      for (var s = 0; s < shed.list.length; s++) {
+        var part = shed.list[s], box = part.box;
+        var span = Math.max(1, box.x1 - box.x0);
+        for (y = Math.max(0, part.y0); y <= box.y1; y++) {
+          for (x = box.x0; x <= box.x1; x++) {
+            i = y * fw + x;
+            if (shed.label[i] !== part.piece) continue;
+            var t = DOWNWIND < 0 ? (x - box.x0) / span : (box.x1 - x) / span;
+            total += cover[i] * (1 - EDGE_BIAS * t);
+            at.push(i);
+            cdf.push(total);
+          }
+        }
+      }
+    }
+    if (!at.length) {                       /* an unfamiliar mark sheds from all of itself */
+      for (i = 0; i < fw * fh; i++) {
         if (cover[i] < 0.5) continue;
-        var gx = (soft[i + 1] - soft[i - 1]) * 0.5;
-        var gy = (soft[i + fw] - soft[i - fw]) * 0.5;
-        var len = Math.sqrt(gx * gx + gy * gy);
-        /* the outward normal is -g/|g|, so this is how squarely the cell faces downwind */
-        var downwind = len > 1e-6 ? Math.max(0, -DOWNWIND * gx / len) : 0;
-        total += cover[i] * (1 - EDGE_BIAS + EDGE_BIAS * downwind);
+        total += cover[i];
         at.push(i);
         cdf.push(total);
       }
@@ -296,7 +389,7 @@
     seedTotal = total;
   }
 
-  /* --- wisps ---------------------------------------------------------------- */
+  /* --- grains --------------------------------------------------------------- */
   function allocate() {
     cap = Math.round(POPULATION_CAP * k * k);
     tail = Math.max(1, TRAIL_POINTS - 1);
@@ -312,11 +405,10 @@
     age = new Float32Array(cap);
     life = new Float32Array(cap);
     amp = new Float32Array(cap);
+    tag = new Int32Array(cap);
     live = 0;
-    nearTail = Math.max(1, Math.round(tail / 2));
     bucket = [];
-    nearer = [];
-    for (var b = 0; b < ALPHA_STEPS; b++) { bucket.push([]); nearer.push([]); }
+    for (var b = 0; b < ALPHA_STEPS; b++) bucket.push([]);
   }
 
   function birth() {
@@ -330,8 +422,9 @@
     var cell = seedAt[lo];
     var i = live++;
     px[i] = (cell % fw) + Math.random();
-    py[i] = Math.floor(cell / fw) + Math.random();
-    for (var t = 0; t < tail; t++) {      /* a new wisp has no tail yet, only a position */
+    py[i] = Math.floor(cell / fw) + Math.random() +
+            (Math.random() - 0.5) * SPRAY * GRAIN * k;
+    for (var t = 0; t < tail; t++) {      /* a new grain has no trail yet, only a position */
       hx[i * tail + t] = px[i];
       hy[i * tail + t] = py[i];
     }
@@ -340,6 +433,7 @@
     age[i] = 0;
     life[i] = LIFETIME * (1 + (Math.random() - 0.5) * 2 * LIFE_SPREAD);
     amp[i] = 0.55 + 0.45 * Math.random();
+    tag[i] = (Math.random() * 2147483647) | 0;    /* its own name, so its glitches are its own */
   }
 
   function kill(i) {
@@ -347,7 +441,7 @@
     if (i === last) return;
     px[i] = px[last]; py[i] = py[last];
     vx[i] = vx[last]; vy[i] = vy[last];
-    age[i] = age[last]; life[i] = life[last]; amp[i] = amp[last];
+    age[i] = age[last]; life[i] = life[last]; amp[i] = amp[last]; tag[i] = tag[last];
     for (var t = 0; t < tail; t++) {
       hx[i * tail + t] = hx[last * tail + t];
       hy[i * tail + t] = hy[last * tail + t];
@@ -414,13 +508,13 @@
   function emit(dt, env) {
     var born = EMIT_RATE * k * k * env * dt;
     emitAcc += born;
-    /* a frame that ran long is owed its own wisps and no more, so a stall cannot cash
+    /* a frame that ran long is owed its own grains and no more, so a stall cannot cash
        itself out as a cloud of sand the moment the tab comes back */
     if (emitAcc > born + 8) emitAcc = born + 8;
     while (emitAcc >= 1) { emitAcc -= 1; birth(); }
   }
 
-  /* Every wisp's recent path, on a clock rather than per frame, so a tail is TRAIL_FADE
+  /* Every grain's recent path, on a clock rather than per frame, so a trail is TRAIL_FADE
      seconds long at any refresh rate. */
   function sample(dt) {
     sampleAcc += dt;
@@ -433,80 +527,121 @@
     }
   }
 
+  /* Fleur de sel: a flake is one to four cells stuck together, and mostly it is one. A
+     grain draws the same one all its life, by the low bits of its own name, so the sand
+     is irregular crystal rather than uniform shot. Sixteen of them, weighted to singles. */
+  var FLAKE = [
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0, 1, 0], [0, 0, -1, 0], [0, 0, 0, 1], [0, 0, 0, -1],
+    [0, 0, 1, 1], [0, 0, -1, 1],
+    [0, 0, 1, 0, 0, 1], [0, 0, -1, 0, 0, -1], [0, 0, 1, 0, 1, -1],
+    [0, 0, 1, 0, 0, 1, 1, 1]
+  ];
+
+  /* The 4 x 4 ordered dither, the one every 8 bit machine used, as thresholds in [0,1). */
+  var BAYER = [
+    0 / 16, 8 / 16, 2 / 16, 10 / 16,
+    12 / 16, 4 / 16, 14 / 16, 6 / 16,
+    3 / 16, 11 / 16, 1 / 16, 9 / 16,
+    15 / 16, 7 / 16, 13 / 16, 5 / 16
+  ];
+
+  /* One cell, thresholded against the dither at the cell it lands in. Everything drawn
+     goes through here, so nothing anywhere is antialiased or off the grid. */
+  function plot(cx, cy, w, cell) {
+    var step = (w * ALPHA_STEPS + BAYER[(cx & 3) | ((cy & 3) << 2)]) | 0;
+    if (step <= 0) return;                      /* on the empty side of the dither */
+    if (step > ALPHA_STEPS) step = ALPHA_STEPS;
+    bucket[step - 1].push(Math.round(cx * cell * dpr), Math.round(cy * cell * dpr));
+  }
+
   /* --- drawing -------------------------------------------------------------- */
-  /* The canvas is cleared outright every frame and every wisp redraws its whole tail
-     from its stored path. The obvious alternative, a persistent buffer faded a little
-     each frame, cannot actually reach zero: the fade is a multiply on eight bit alpha,
-     so anything at or under 0.5 / fade rounds back to itself and a permanent haze in
-     the shape of the plume settles over the page. Clearing cannot leave residue, and it
-     costs a clearRect and four short segments per wisp. Segments are batched into a
-     path per opacity step, so a frame is ALPHA_STEPS strokes however busy the air is. */
+  /* Grains are not drawn where they are. They are drawn in the cell they are in, on a
+     GRAIN px grid. Nothing is antialiased and nothing moves by less than a whole cell, so
+     a grain crossing the page reads as a run of lit cells rather than as a line: the sand
+     is made of pixels, not of ink. A grain's trail is the cells it stood in a few sample
+     times ago.
+
+     Nothing fades smoothly either. A grain's ink is thresholded against the 4 x 4 ordered
+     dither at the cell it is in, so as the sand runs out downwind it does not go evenly
+     grey, it breaks into fewer and fewer lit cells in a regular pattern and then stops.
+     That dither is the fade: dropping to four opacity steps and letting the pattern carry
+     the rest is what makes it read as pixels dissolving rather than ink thinning.
+
+     On top of that it glitches. Every grain draws a fresh hand GLITCH_RATE times a second
+     from a hash of its own name and the clock, so a glitch holds for a few frames instead
+     of buzzing: some tear downwind of where they are, some smear into a horizontal run of
+     cells, some drop out entirely for an instant.
+
+     The canvas is cleared outright every frame. The obvious alternative, a persistent
+     buffer faded a little each frame, cannot actually reach zero: the fade is a multiply
+     on eight bit alpha, so anything at or under 0.5 / fade rounds back to itself and a
+     permanent haze in the shape of the plume settles over the page. */
   function draw() {
-    var b, i, t;
+    var b, i, t, r;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (b = 0; b < ALPHA_STEPS; b++) { bucket[b].length = 0; nearer[b].length = 0; }
+    for (b = 0; b < ALPHA_STEPS; b++) bucket[b].length = 0;
     var fade = EDGE_FADE * k;
+    var cell = GRAIN * k;
+    var size = Math.max(1, Math.round(cell * dpr));
+    var hand = (clock * GLITCH_RATE) | 0;
+    var tear = Math.round(GLITCH_TEAR * k / cell);
 
     for (i = 0; i < live; i++) {
       var u = age[i] / life[i];
-      var a = amp[i] * Math.min(1, u * 9) * (1 - u * u);
-      /* a wisp reaching the end of the canvas, or the edge of the page, thins out
-         over EDGE_FADE rather than being cut off at a straight line */
+      /* linear in age, and age is very nearly distance downwind, so this is the fade to
+         the left; the dither below turns it into cells going out rather than going pale */
+      var a = amp[i] * Math.min(1, u * 9) * (1 - u);
       if (px[i] < floorX + fade) a *= Math.max(0, (px[i] - floorX) / fade);
       else if (px[i] > ceilX - fade) a *= Math.max(0, (ceilX - px[i]) / fade);
-      if (a <= 0.03) continue;
-      /* head first, then back along the ring: the whole tail once, its near half a
-         second time, so the wisp darkens toward its head in two strokes rather than
-         one per segment. Two figures per wisp instead of TRAIL_POINTS is most of the
-         frame cost, and a joined path also stops the ink doubling at every joint. */
-      var af = a * TRAIL_TAPER, an = a - af;
-      var far = af > 0.03 ? bucket[Math.min(ALPHA_STEPS - 1, (af * ALPHA_STEPS) | 0)] : null;
-      var near = an > 0.03 ? nearer[Math.min(ALPHA_STEPS - 1, (an * ALPHA_STEPS) | 0)] : null;
-      var base = i * tail, x = px[i] * dpr, y = py[i] * dpr;
-      if (far) far.push(x, y);
-      if (near) near.push(x, y);
-      for (t = 0; t < tail; t++) {
-        var s = (head - t + tail * 2) % tail;
-        x = hx[base + s] * dpr;
-        y = hy[base + s] * dpr;
-        if (far) far.push(x, y);
-        if (near && t < nearTail) near.push(x, y);
+      if (a <= 0) continue;
+
+      var luck = hash(tag[i], hand);            /* this grain's hand, held for 1 / GLITCH_RATE s */
+      if (luck < GLITCH_DROP * 2 - 1) continue; /* dropped: gone for an instant */
+      var torn = 0, smear = 1;
+      if (luck > 1 - GLITCH_CHANCE * 2) {
+        var how = hash(tag[i] ^ 0x5bf03635, hand);
+        torn = Math.round(DOWNWIND * (0.4 + 0.6 * Math.abs(how)) * tear);
+        if (how > 0) smear = 1 + ((Math.abs(how) * GLITCH_SMEAR) | 0);
+      }
+
+      var base = i * tail, shape = FLAKE[tag[i] & 15];
+      for (t = 0; t <= tail; t++) {
+        var w = a * (1 - t / TRAIL_POINTS);
+        if (w <= 0) break;
+        var gx, gy;
+        if (t === 0) { gx = px[i]; gy = py[i]; }
+        else {
+          var s = (head - t + 1 + tail * 2) % tail;
+          gx = hx[base + s];
+          gy = hy[base + s];
+        }
+        var col = Math.round(gx / cell) + torn;
+        var row = Math.round(gy / cell);
+        if (t === 0) {
+          /* the flake itself, and then whatever the glitch is dragging out behind it */
+          for (r = 0; r < shape.length; r += 2) plot(col + shape[r], row + shape[r + 1], w, cell);
+          for (r = 1; r < smear; r++) plot(col + DOWNWIND * r, row, w, cell);
+        } else {
+          plot(col, row, w, cell);              /* what the flake shed on the way here */
+        }
       }
     }
 
-    /* A wisp is one device pixel wide: the finest mark the screen can make, and the one
-       stroke width Skia has a dedicated path for, which is worth about five times the
-       frame cost of any wider line. Opacity carries the pixel ratio instead, so a wisp
-       lays the same ink per CSS px of length whatever the display is. */
-    var peak = Math.min(ALPHA_CEILING, PARTICLE_ALPHA * dpr) * (dark.matches ? DARK_TRIM : 1);
-    ctx.strokeStyle = ink;
-    ctx.lineWidth = 1;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    var peak = PARTICLE_ALPHA * (dark.matches ? DARK_TRIM : 1);
+    ctx.fillStyle = ink;
     for (b = 0; b < ALPHA_STEPS; b++) {
-      var wide = bucket[b], slim = nearer[b];
-      if (!wide.length && !slim.length) continue;
-      ctx.globalAlpha = peak * (b + 0.5) / ALPHA_STEPS;
-      ctx.beginPath();
-      trace(wide, TRAIL_POINTS);
-      trace(slim, nearTail + 1);
-      ctx.stroke();
+      var cells = bucket[b];
+      if (!cells.length) continue;
+      ctx.globalAlpha = peak * (b + 1) / ALPHA_STEPS;
+      for (i = 0; i < cells.length; i += 2) ctx.fillRect(cells[i], cells[i + 1], size, size);
     }
     ctx.globalAlpha = 1;
   }
 
-  /* one polyline per run of `n` points in a flat list of coordinates */
-  function trace(pts, n) {
-    var stride = n * 2;
-    for (var i = 0; i < pts.length; i += stride) {
-      ctx.moveTo(pts[i], pts[i + 1]);
-      for (var j = 2; j < stride; j += 2) ctx.lineTo(pts[i + j], pts[i + j + 1]);
-    }
-  }
-
   /* The change event on a MediaQueryList is not something to bet the colours on: a list
      made early in a script can go on reporting the right answer in `matches` and never
-     fire at all, which leaves wisps drawn in the old scheme's ink on the new scheme's
+     fire at all, which leaves grains drawn in the old scheme's ink on the new scheme's
      paper. Reading the ink back off the page every so often does not care how the theme
      moved, and costs one style read twice a second. A different ink re-seeds the air. */
   function watch(dt) {
@@ -557,8 +692,8 @@
     });
   }
 
-  /* The canvas overhangs its anchor, mostly downwind, so wisps have somewhere to go.
-     floorX and ceilX are where the viewport cuts across it: a wisp blown off the page
+  /* The canvas overhangs its anchor, mostly downwind, so the sand has somewhere to go.
+     floorX and ceilX are where the viewport cuts across it: a grain blown off the page
      dissolves at that line instead of being clipped by it. */
   function fit() {
     dpr = window.devicePixelRatio || 1;
@@ -591,8 +726,8 @@
     readInk();
     fit();
     var cover = rasterise(art);
-    var soft = buildFlow(cover);
-    buildSeeds(cover, soft);
+    buildFlow(cover);
+    buildSeeds(cover);
     allocate();
     clock = 0;
     emitAcc = 0;

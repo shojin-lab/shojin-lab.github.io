@@ -293,7 +293,7 @@ It is what the session carried forward about them.</p>
 <h3>What the agent did with the notes</h3>
 
 <p>
-  The files were mounted in every memory arm and the index was spliced into the system prompt, so the notes were there whether or not the session went looking, and the agent was not forbidden to use them.
+  The files were mounted in every memory arm and the index was spliced into the system prompt, so the notes were there whether or not the session went looking.
 </p>
 
 <p>
@@ -310,7 +310,7 @@ It is what the session carried forward about them.</p>
 <h2>Avenues of self-improvement that were not used</h2>
 
 <p>
-  The unused affordances were not missing, and the agent was not forbidden.
+  The unused affordances were not missing and the agent was not forbidden to use them.
   Code execution, subagents, and web search were validated as available for the whole run, and three interventions failed to elicit them: moving the model from Sonnet to Opus, raising the effort from <code>low</code> to <code>xhigh</code>, and granting explicit permission in the prompt.
   It would be exciting to see more ambitious exploration, even building with the agent SDK to complete the tasks, but none of that materialized.
   Tasks arrived one at a time and had to be finished before the next was dispensed.
@@ -371,12 +371,6 @@ It is what the session carried forward about them.</p>
   A run scored on one task in ten, or scored a week later, may improve less, or not at all, and the part of the context that carries it need not be the same part.
 </p>
 
-<p>
-  Measuring that is the next study.
-  Hold the task server and the harness fixed, make the feedback sparse or delayed, and run the same ablations.
-  Whether the conversation still carries the improvement is the first thing to check, and whether a written note does more under thin feedback than it did here is the second.
-</p>
-
 <h2>The memories were not the mechanism</h2>
 
 <p>
@@ -391,7 +385,7 @@ It is what the session carried forward about them.</p>
 
 <p>
   The artifacts that did matter were built for different reasons.
-  The conversation is the session's own working record, kept because a session cannot run without one.
+  The conversation is the session's own working record.
   The compaction summary exists so the harness can keep working past a full context window, and it turned out to carry most of the improvement at less than a hundredth of the size, three boundaries out of four.
   If you want to hand an improved agent to the next session, the thing to keep is not the notes it wrote for itself.
   It is the summary it wrote to keep working.

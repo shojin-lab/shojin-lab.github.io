@@ -9,13 +9,13 @@
 
   /* --- tunables ------------------------------------------------------------ */
   var GRAIN_STEP = 2;        /* CSS px per grain: the Game of Life cell size */
-  var WIND_STRENGTH = 1000;  /* leftward acceleration at the peak of a gust, CSS px/s^2 */
-  var GUST_PERIOD = 2800;    /* one whole cycle: gust plus the time allowed to re-gather, ms */
+  var WIND_STRENGTH = 1250;  /* leftward acceleration at the peak of a gust, CSS px/s^2 */
+  var GUST_PERIOD = 3600;    /* hard cap on one cycle: the mark is normally whole well before, ms */
   var GUST_DURATION = 950;   /* how long the wind actually blows inside that cycle, ms */
   var DETACH_BIAS = 0.8;     /* 0 = grains let go at random, 1 = strictly right edge first */
-  var TURBULENCE = 190;      /* tumble from the noise field, CSS px/s^2, so grains do not slide */
+  var TURBULENCE = 240;      /* tumble from the noise field, CSS px/s^2, so grains do not slide */
   var SPRING = 75;           /* pull home, CSS px/s^2 per CSS px of displacement */
-  var DAMPING = 4;           /* velocity decay per second: how thick the air is */
+  var DAMPING = 5;           /* velocity decay per second: how thick the air is */
   var FADE = 0.45;           /* how far a fully detached grain thins out */
 
   var DETACH_REACH = 0.52;   /* share of the mark a gust gets through before it passes */
@@ -157,7 +157,6 @@
     var damp = Math.exp(-DAMPING * dt);
     var take = 1 - Math.exp(-RELEASE * dt);
     var drift = (t / 1000) * NOISE_DRIFT;
-    var worst = 0;
     for (var i = 0; i < grains.length; i++) {
       var p = grains[i];
       p.free += ((env * DETACH_REACH > p.thr ? 1 : 0) - p.free) * take;
@@ -177,16 +176,16 @@
       var d = Math.sqrt(dx * dx + dy * dy);
       /* A grain shows once it has lifted; the mark loses exactly what the air takes. */
       p.vis = Math.max(0, Math.min(1, Math.max(p.free * GRANULATE, (d - QUIVER) / GRAIN_STEP)));
-      if (d > worst) worst = d;
     }
-    return { env: env, worst: worst };
   }
 
-  function settled(t, worst) {
+  /* The mark is whole again once no grain is visible away from home, which is exactly
+     when the frame about to be drawn is the crisp SVG and nothing else. Stopping there
+     cannot show a snap: the last animated frame and the resting frame are the same. */
+  function settled(t) {
     if (t < GUST_DURATION) return false;
-    if (worst > 0.12) return false;
     for (var i = 0; i < grains.length; i++) {
-      if (Math.abs(grains[i].vx) + Math.abs(grains[i].vy) > 1.5) return false;
+      if (grains[i].vis >= 0.01) return false;
     }
     return true;
   }
@@ -246,13 +245,12 @@
     lag += Math.min(100, now - prev);
     prev = now;
     var t = now - gustStart;
-    var worst = 0;
     while (lag >= STEP_MS) {
-      worst = step(STEP_MS / 1000, t - lag).worst;
+      step(STEP_MS / 1000, t - lag);
       lag -= STEP_MS;
     }
     draw();
-    if (settled(t, worst) || t > GUST_PERIOD) {
+    if (settled(t) || t > GUST_PERIOD) {
       home();
       draw();
       raf = 0;
@@ -263,7 +261,13 @@
   }
 
   function blow() {
-    if (motion.matches || !ctx || !grains.length || raf) return;
+    if (motion.matches || !ctx || !grains.length) return;
+    if (raf) {
+      /* Hovering while the last grains are still drifting home sends a fresh gust
+         through them where they are, instead of being ignored or snapping the mark. */
+      if (performance.now() - gustStart >= GUST_DURATION) gustStart = performance.now();
+      return;
+    }
     home();
     viewLeft = canvas.getBoundingClientRect().left;
     gustStart = performance.now();

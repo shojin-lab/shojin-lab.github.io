@@ -178,6 +178,15 @@ figure.aj-figure iframe {
   background: var(--fig-bg);
 }
 
+/* An image arrives at its own resolution, so it is held to its natural size rather than
+   stretched to the column: a terminal capture blurs when it is scaled up. The clamp is
+   what a narrow viewport needs, where the column is the smaller of the two. */
+figure.aj-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 figure.aj-figure figcaption {
   margin-top: 0.7rem;
   font-size: 13px;

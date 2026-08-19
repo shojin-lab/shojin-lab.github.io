@@ -103,6 +103,16 @@ footer {
   font-size: 12px;
   color: var(--muted);
 }
+/* Same hairline treatment as the nav, minus the size: the footer sets 12px and the link
+   inherits it, so the line stays one weight. Without this the browser default takes
+   over, which is blue on paper and unreadable blue on the dark ground. */
+footer a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--muted);
+  padding-bottom: 1px;
+}
+footer a:hover { border-bottom-color: var(--ink); }
 
 @media (max-width: 620px) {
   .page { padding: 56px 22px 48px; }

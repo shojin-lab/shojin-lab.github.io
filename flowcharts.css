@@ -53,7 +53,9 @@
 .fc-strip .fc-note { margin-top: 0; }
 .fc-result { font-size: 12px; line-height: 1.6; color: var(--ink); margin-top: 0; }
 .fc-result span { color: var(--caption); }
-.fc-fine { font-size: 10px; line-height: 1.7; letter-spacing: 0.02em; color: var(--muted); }
+/* A sentence inside a figure is content, so it takes --caption rather than the chrome
+   grey; --muted stays on the eyebrows and annotations. */
+.fc-fine { font-size: 10px; line-height: 1.7; letter-spacing: 0.02em; color: var(--caption); }
 .fc-instruction {
   font-size: 11px;
   line-height: 1.5;
@@ -166,6 +168,91 @@
 .fc-exit-key { flex: none; padding: 10px 13px; font-size: 11px; line-height: 1.6; border-right: 1px solid var(--rule); }
 .fc-exit-val { padding: 10px 13px; font-size: 11px; line-height: 1.6; color: var(--caption); }
 
+/* ---------------------------------------------------- figure 0 · two agents, paired */
+/* Both panels take the same strip above and below; the contrast is carried by the shape
+   of the middle, so the panels share every value except their contents. */
+.fc-lead { flex: 1; min-width: 0; font-size: 12px; line-height: 1.6; }
+.fc-lead span { color: var(--caption); }
+.fc-panel-title { font-size: 13px; font-weight: 700; line-height: 1.45; margin-bottom: 12px; }
+.fc-step {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.fc-step--work { border-color: var(--ink); background: var(--code-bg); }
+.fc-tick { font-size: 11px; line-height: 1; color: var(--muted); text-align: center; padding: 5px 0; }
+/* The outer loop, drawn inside a lane: the same three-sided rail as figure 4's, scaled to
+   the lane and landing its arrowhead back on "pull a task". */
+.fc-lane-loop {
+  position: relative;
+  margin: 0 26%;
+  height: 18px;
+  border: 1px solid var(--muted);
+  border-top: none;
+}
+.fc-lane-loop-head {
+  position: absolute;
+  left: 0;
+  top: -8px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted);
+}
+.fc-lane-loop-head::before { content: "\2191"; }
+.fc-cycle-cap {
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 6px;
+}
+/* What survives the loop. The same chip unit in both lanes, so the count is the contrast. */
+.fc-persist { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--rule); }
+
+/* The inner loop of a single task: reason and act alternate against the domain's tools,
+   and the answer is given once. Drawn in the left lane only, where the whole of the work
+   happens inside one conversation. */
+.fc-turn { border: 1px solid var(--ink); background: var(--code-bg); padding: 9px 10px; }
+.fc-turn-row { display: flex; align-items: center; gap: 7px; }
+.fc-turn-swap { font-size: 11px; line-height: 1; color: var(--muted); }
+.fc-mini {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 4px 7px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.fc-turn-cap {
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 7px;
+}
+.fc-turn-answer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.fc-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.fc-chip {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 6px 8px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.fc-chip--wide { grid-column: 1 / -1; }
+
 /* --------------------------------------------------------------------- stacking */
 @media (max-width: 620px) {
   .fc-layers, .fc-row, .fc-fork, .fc-fork--arrows { grid-template-columns: 1fr; }
@@ -174,6 +261,7 @@
   .fc-xchg .x-out::before { content: "\2193"; }
   .fc-xchg .x-in::before { content: "\2191"; }
   .fc-arrow { padding: 8px 0; }
+  .fc-chips { grid-template-columns: 1fr; }
   .fc-arrow::before { content: "\2193"; }
   .fc-fork--arrows div:last-child { display: none; }
   /* The rail's geometry depends on three boxes in a row; stated instead. */

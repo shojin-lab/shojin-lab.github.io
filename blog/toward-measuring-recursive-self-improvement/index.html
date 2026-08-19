@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;700&display=swap">
 <link rel="stylesheet" href="/style.css?v=5">
 <link rel="stylesheet" href="/post.css?v=6">
-<link rel="stylesheet" href="/flowcharts.css?v=1">
+<link rel="stylesheet" href="/flowcharts.css?v=2">
 </head>
 <body>
 <div class="page post-page">
@@ -63,7 +63,7 @@
 <p>
   Recursive self-improvement is here and being developed.
   The question is, how deep into it are we?
-  Answering it requires an instrument, and this post reports what an initial prototype measured across twelve agent-domain combinations.
+  Answering it requires an instrument, and this post reports what <a href="https://github.com/shojin-lab/shobench">an initial prototype</a> measured across twelve agent-domain combinations.
 </p>
 
 <h2>Measuring progress in recursive self-improvement is not trivial.</h2>
@@ -76,11 +76,82 @@
   So a fair measurement cannot assume what the agent did; it has to record it.
 </p>
 
+<figure class="aj-figure fc">
+  <div class="fc-strip">
+    <div class="fc-eyebrow">given</div>
+    <div class="fc-lead">the same set of tasks <span>and one instruction: get better</span></div>
+  </div>
+
+  <div class="fc-fork fc-fork--arrows"><div>&darr;</div><div>&darr;</div></div>
+
+  <div class="fc-fork">
+    <div class="fc-box fc-lane">
+      <div class="fc-eyebrow">one agent</div>
+      <div class="fc-panel-title">everything in one conversation</div>
+      <div class="fc-step">pull a task</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-turn">
+        <div class="fc-turn-row">
+          <div class="fc-mini">reason</div>
+          <div class="fc-turn-swap">&harr;</div>
+          <div class="fc-mini">act: call a tool</div>
+        </div>
+        <div class="fc-turn-cap">&#8634; while not done</div>
+        <div class="fc-turn-answer">answer</div>
+      </div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step">the grade comes back</div>
+      <div class="fc-lane-loop"><span class="fc-lane-loop-head"></span></div>
+      <div class="fc-cycle-cap">&#8634; next task, same conversation</div>
+      <div class="fc-persist">
+        <div class="fc-eyebrow">what carries</div>
+        <div class="fc-chips">
+          <div class="fc-chip fc-chip--wide">the conversation itself</div>
+        </div>
+      </div>
+      <div class="fc-fine fc-lane-end">nothing is written down: the improvement and the transcript are the same object</div>
+    </div>
+
+    <div class="fc-box fc-lane">
+      <div class="fc-eyebrow">another agent</div>
+      <div class="fc-panel-title">builds itself an apparatus</div>
+      <div class="fc-step">pull a task</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step fc-step--work">work it through the apparatus</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step">the grade comes back</div>
+      <div class="fc-lane-loop"><span class="fc-lane-loop-head"></span></div>
+      <div class="fc-cycle-cap">&#8634; next task, apparatus revised</div>
+      <div class="fc-persist">
+        <div class="fc-eyebrow">what carries</div>
+        <div class="fc-chips">
+          <div class="fc-chip">subagents</div>
+          <div class="fc-chip">guardrails in code</div>
+          <div class="fc-chip">telemetry</div>
+          <div class="fc-chip">offline evals</div>
+          <div class="fc-chip fc-chip--wide">optimization API calls</div>
+        </div>
+      </div>
+      <div class="fc-fine fc-lane-end">the gain could sit anywhere in it, or nowhere</div>
+    </div>
+  </div>
+
+  <div class="fc-fork fc-fork--arrows"><div>&darr;</div><div>&darr;</div></div>
+
+  <div class="fc-strip fc-strip--result">
+    <div class="fc-eyebrow">so</div>
+    <div class="fc-lead">the measurement assumes neither shape <span>&rarr; it records what the agent did</span></div>
+  </div>
+  <figcaption>Two agents, the same tasks and the same instruction. Both run the same outer loop, pulling a task and taking the grade that ends it. The left works each task inside the conversation it is already in, and its improvement and its transcript are the same object; the right spreads the work across processes, code, and services it wrote for itself. Both are legitimate answers to &ldquo;get better&rdquo;, which is why the measurement cannot be built around either one.</figcaption>
+</figure>
+
 <p>
   Each agent harness has its own convention for storing improvement artifacts, and the existence of an artifact does not entail that it contributed to improvement.
-  One agent writes notes. Another writes code. A third edits its own configuration through channels its harness provides, or builds a new channel entirely.
+  One agent writes notes.
+  Another writes code.
+  A third edits its own configuration through channels its harness provides, or builds a new channel entirely.
   An artifact can look like learning without carrying it.
-  In a preliminary study, the memory files an agent wrote had no measurable effect on later performance.
+  In <a href="https://shojin.dev/blog/claude-code-improved-through-conversation-not-memories/">a preliminary study</a>, the memory files an agent wrote had no measurable effect on later performance.
   Instead, the improvement was carried by the context window.
   Disentangling the two was only possible because both had been kept.
   So the measurement has to carry the agent’s entire saved state forward, let evaluation sessions reach it, and support taking pieces away so that artifacts that carried the gain can be disentangled from those that did not.
@@ -119,7 +190,7 @@
 <h2>shōgym and shōbench</h2>
 
 <p>
-  I have started developing shōgym and shōbench to meet those requirements.
+  I have started developing <a href="https://github.com/shojin-lab/shogym">shōgym</a> and <a href="https://github.com/shojin-lab/shobench">shōbench</a> to meet those requirements.
   Shōgym is the domain layer: a set of task domains behind a universal interface, served as a stream of task descriptions and tool definitions that the agent can draw from, with execution and verification held outside the agent’s reach.
   Shōbench is the measurement layer that runs on top of it.
   Its unit is a cell: one agent-harness and model paired with one task stream.
@@ -206,9 +277,10 @@
 
 <p>
   The work phase is a stream, not a script.
-  The agent pulls its next task rather than being handed one, can hold several tasks open at once, and the tool call that ends the task returns the feedback.
+  The agent pulls its next task rather than being handed one, and the tool call that ends the task returns the feedback.
   Feedback is returned during the self-improvement rollout and withheld during both exams.
-  The stream is a horizon rather than a quota.
+  The serving allows several tasks in flight at once, though the instruction directs one at a time.
+  The pool sets how much work is available, not how much is required.
 </p>
 
 <figure class="aj-figure fc">
@@ -220,7 +292,7 @@
     <div class="fc-arrow"></div>
     <div class="fc-box fc-box--work">
       <div class="fc-title--sm">work the task</div>
-      <div class="fc-note">several open at once</div>
+      <div class="fc-note">one task at a time</div>
     </div>
     <div class="fc-arrow"></div>
     <div class="fc-box">
@@ -229,8 +301,8 @@
     </div>
   </div>
   <div class="fc-loop"><span class="fc-loop-head"></span></div>
-  <div class="fc-loop-cap">&#8634; continue until the queue is empty and no pulled task is unfinished</div>
-  <div class="fc-loop-back">&#8634; back to get_task, until the queue is empty and no pulled task is unfinished</div>
+  <div class="fc-loop-cap">&#8634; continue until the stream is exhausted</div>
+  <div class="fc-loop-back">&#8634; back to get_task, until the stream is exhausted</div>
   <div class="fc-exit">
     <div class="fc-exit-key">{done: true}</div>
     <div class="fc-exit-val">the queue is empty: the only exit the stream itself offers</div>
@@ -239,7 +311,7 @@
 </figure>
 
 <p>
-  The agent is directed to continue until the queue is empty and its own tasks are finished.
+  The agent is directed to continue until the stream is exhausted.
   Claude Code and Codex can end their sessions early.
   The Prime Agent controller, as configured, has no voluntary terminal condition, so its sessions run until an external bound ends them.
 </p>
@@ -254,22 +326,22 @@ An MCP server provides a stream of tasks.
 Nothing external loops for you - drive yourself:
 
 1. Calling `get_task` pulls the next task.
-   If it returns {done: true}, the queue is empty.
+   If it returns {done: true}, the stream is exhausted, stop.
 2. The task can be completed using the tools listed.
-   One of them ends the task.
-3. Continue until the queue is empty and no task you pulled is unfinished.</code></pre>
+   One of them ends the task; call it before pulling the next.
+3. Continue until the stream is exhausted.</code></pre>
 
 <p>
-  It also receives an opening turn, its harness’s own system content, the stream’s tool descriptions and schemas, and each task’s framing text.
+  It also receives the message that starts the session, its harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
   Prime Agent is not given tools in that form at all: it controls the stream by importing a Python module into its kernel, so a skill file replaces the tool descriptions and documents how the calls behave.
-  The instruction never says how to improve; it must make its own decisions based on the tasks and the feedback it receives.
+  The instruction never says how to improve; the agent makes its own decisions based on the tasks and the feedback it receives.
 </p>
 
 <p>
   What the agent leaves behind is kept: the transcript of its work, the files it wrote, and the configuration it changed.
   Each exam session forks that conversation inside its own copy of the home and working directories the agent accumulated.
   Because the whole of it is kept, pieces can be removed and the exam rerun.
-  A previous study used exactly that to separate an agent’s memory files from the conversation, which actually carried the improvement.
+  <a href="https://shojin.dev/blog/claude-code-improved-through-conversation-not-memories/">A previous study</a> used exactly that to separate an agent’s memory files from the conversation, which actually carried the improvement.
 </p>
 
 <p>
@@ -288,7 +360,7 @@ Nothing external loops for you - drive yourself:
 <p>
   As a starting point, this study examines four agent-model pairs across three domains.
   The agents are Claude Code with Opus 5, Codex with GPT 5.6 Terra, and Prime Agent with either Opus 5 or Terra.
-  Only the Prime Agent pair varies the model while the harness is held fixed.
+  Only Prime Agent runs under both models, the one place the model varies while the harness is held fixed.
   AutomationBench is a set of business workflow tasks worked through tool calls.
   τ³-Banking is a fintech customer support benchmark run here in its offline configuration, with keyword retrieval over the policy documents rather than the benchmark’s default embeddings.
   Humanity’s Last Exam (HLE) is a knowledge exam of short questions with verifiable answers.
@@ -339,9 +411,9 @@ Nothing external loops for you - drive yourself:
   Some tasks are excluded.
   The τ³-Banking split is 87 of 97 tasks that the offline evaluator scores in full.
   Nine of the ten excluded tasks would receive a point unconditionally under this evaluator, and the tenth would be graded on only part of its rubric.
-  Three AutomationBench tasks cannot be graded at all because the scorer rebuilds the world state to check it and rejects states the agent’s own tools produced, so they stay unpaired in every AutomationBench cell.
+  Three AutomationBench tasks can fail to grade because the scorer rebuilds the world state to check it and rejects states the agent’s own tools produced.
+  Depending on the cell, this leaves 117 or 118 of the 120 pairs.
   One τ³-Banking cell pairs 37 of its 40 held-out tasks because three exam sessions failed to finalize and the domain published no score for them.
-  These exclusions are visible in the figure below as differing task counts.
 </p>
 
 <p>
@@ -368,7 +440,8 @@ Nothing external loops for you - drive yourself:
   The question is whether the instrument can tell when an agent has self-improved.
   Operationally: after an agent works a stream of tasks under a standing instruction to get better, does a new session initialized from its terminal state solve more of the same held-out tasks than the baseline did, by a margin that clears zero?
   The answer is yes, and shōbench registered three different things.
-  Seven of the twelve cells showed significant changes. Five are improvements.
+  Seven of the twelve cells showed significant changes.
+  Five are improvements.
   One is a regression.
   One is an agent that cheated.
 </p>
@@ -529,7 +602,9 @@ Nothing external loops for you - drive yourself:
 
 <p>
   On τ³-Banking, the two Prime Agent cells improved by 30.0 points [+11.2, +48.8] with Opus 5 and 17.5 [+3.7, +31.3] with Terra.
+  The Opus 5 cell is the agent from the opening: it drained its queue, could not end its session, and spent the idle tail building the tested library its next sessions found.
   Claude Code moved 7.5 [&minus;7.2, +22.2], and Codex did not move at all, 0.0 [&minus;15.2, +15.2].
+  The Claude Code number measures a truncated treatment: an operator error cut its rollout short at 37 of the 47 tasks.
 </p>
 
 <p>
@@ -569,6 +644,7 @@ Nothing external loops for you - drive yourself:
   The transcript held the rest.
   It showed a completed download that printed a 75 MB parquet file and 558 commands that read it.
   The scores on the rollout tasks showed a success rate of 74.5% before downloading it and 98.4% after.
+  The cheat carried into the after-exam as method rather than file: the download died with the rollout’s container, and the exam sessions, resumed from that conversation, went back to the dataset host themselves, which the exam-phase network log records.
 </p>
 
 <p>

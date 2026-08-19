@@ -32,13 +32,6 @@
 
   <article class="post"> <h1>Toward measuring recursive self-improvement</h1> <div class="byline"> <time datetime="2026-08-18">August 18, 2026</time> &middot; Andrew Jesson </div>
 
-<!-- DRAFT NOTE: remove this whole div before publishing. -->
-<div style="font-family: var(--mono); font-size: 12px; line-height: 1.7; margin: 0 0 2.6rem; padding: 12px 14px; border: 2px dashed var(--ink); background: var(--code-bg);">
-  <strong>Draft, not for publication.</strong>
-  The results section is being rewritten when the current runs land, and the numbers shown here were produced under an earlier version of the instruction quoted in the method.
-  Delete this note before this post goes out.
-</div>
-
 <p>
   When an agent works through an open-ended series of tasks, it builds up experience.
   When it receives feedback, it sees what worked and what did not.
@@ -150,7 +143,7 @@
   One agent writes notes.
   Another writes code.
   A third edits its own configuration through channels its harness provides, or builds a new channel entirely.
-  An artifact can look like learning without carrying it.
+  Moreover, an artifact can look like learning without carrying it.
   In <a href="https://shojin.dev/blog/claude-code-improved-through-conversation-not-memories/">a preliminary study</a>, the memory files an agent wrote had no measurable effect on later performance.
   Instead, the improvement was carried by the context window.
   Disentangling the two was only possible because both had been kept.
@@ -162,7 +155,7 @@
   Told to get better, an agent may improve the number rather than the ability.
   An agent that finds a benchmark’s answer key online will post its best score while measuring nothing, and a network log may reveal the download but not the subsequent local reads.
   The measurement has to watch the agent’s traffic with the world and treat a corrupted score as a finding rather than a nuisance.
-  If “the agent cheats” is where we are, it is better to know that rather than artificially limit its capacity to cheat.
+  If “the agent cheats” is where we are, it is better to know that rather than artificially limit its capacity to cheat by taking away its ability to do research.
 </p>
 
 <p>
@@ -176,9 +169,38 @@
   Comparing agents adds requirements of its own.
   Every harness has its own protocol, so the task domains need a universal interface: any harness plugs in, works the same stream, and is graded the same way.
   Then any difference between two cells measures the agents rather than the wiring.
-  The serving of tasks also needs to leave room for choice.
-  A fixed script of tasks only lets an agent execute; a queue it can draw from concurrently lets it decide which experiment to advance next.
 </p>
+
+<p>
+  The serving of tasks also needs to leave room for choice.
+  A fixed script of tasks only lets an agent execute.
+  A queue the agent draws from lets it pull several tasks, choose which to run, read the grades that come back, and choose what to run next.
+  That loop is experimental design: which tasks to try, in what order, and how many at once are all decisions about what to learn next.
+  The serving has to permit that loop without prescribing it.
+</p>
+
+<figure class="aj-figure fc">
+  <div class="fc-row">
+    <div class="fc-box">
+      <div class="fc-title--sm">pull tasks</div>
+      <div class="fc-note">several may be open at once</div>
+    </div>
+    <div class="fc-arrow"></div>
+    <div class="fc-box fc-box--work">
+      <div class="fc-title--sm">choose</div>
+      <div class="fc-note">which task to advance next</div>
+    </div>
+    <div class="fc-arrow"></div>
+    <div class="fc-box">
+      <div class="fc-title--sm">the grades come back</div>
+      <div class="fc-note">one per task ended</div>
+    </div>
+  </div>
+  <div class="fc-loop"><span class="fc-loop-head"></span></div>
+  <div class="fc-loop-cap">&#8634; choose again: pull more, or advance a task already held</div>
+  <div class="fc-loop-back">&#8634; back to choosing: pull more, or advance a task already held</div>
+  <figcaption>The serving leaves the loop to the agent. Which tasks to try, in what order, and how many to hold open are its decisions, made on the grades it has already seen. That is experimental design, run by the agent on its own work.</figcaption>
+</figure>
 
 <p>
   The domain itself has to sit beyond the agent’s reach.
@@ -199,7 +221,7 @@
 <figure class="aj-figure fc">
   <div class="fc-strip fc-strip--layer">
     <div class="fc-title">sh&#333;bench</div>
-    <div class="fc-note">runs the cell &nbsp;&middot;&nbsp; keeps the terminal state &nbsp;&middot;&nbsp; records egress and termination &nbsp;&middot;&nbsp; publishes the pair</div>
+    <div class="fc-note">runs the cell &nbsp;&middot;&nbsp; keeps the terminal state &nbsp;&middot;&nbsp; records egress and termination &nbsp;&middot;&nbsp; publishes&nbsp;the&nbsp;pair</div>
   </div>
   <div class="fc-layers">
     <div class="fc-box fc-box--sandbox">
@@ -279,7 +301,7 @@
   The work phase is a stream, not a script.
   The agent pulls its next task rather than being handed one, and the tool call that ends the task returns the feedback.
   Feedback is returned during the self-improvement rollout and withheld during both exams.
-  The serving allows several tasks in flight at once, though the instruction directs one at a time.
+  The serving allows several tasks in flight at once, so the agent can choose which tasks to run and how many to run concurrently.
   The pool sets how much work is available, not how much is required.
 </p>
 
@@ -312,8 +334,6 @@
 
 <p>
   The agent is directed to continue until the stream is exhausted.
-  Claude Code and Codex can end their sessions early.
-  The Prime Agent controller, as configured, has no voluntary terminal condition, so its sessions run until an external bound ends them.
 </p>
 
 <p>
@@ -333,7 +353,6 @@ Nothing external loops for you - drive yourself:
 
 <p>
   It also receives the message that starts the session, its harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
-  Prime Agent is not given tools in that form at all: it controls the stream by importing a Python module into its kernel, so a skill file replaces the tool descriptions and documents how the calls behave.
   The instruction never says how to improve; the agent makes its own decisions based on the tasks and the feedback it receives.
 </p>
 
@@ -355,15 +374,19 @@ Nothing external loops for you - drive yourself:
 <p>
   Every session’s termination is classified: the agent chose to stop, the queue emptied, a wall clock expired, a provider limit suspended it, it stalled without progressing, an operator ended it, or the harness failed.
   A run killed before it can record an ending gets no after-exam, and a comparison missing either half of a pair is published under an incomplete name rather than as a result.
+  An interruption from outside, an expired credential or a provider usage limit, may be resumed; a stop the agent chose may not, because the choice is part of the measurement.
 </p>
+
+<h3>Implementation details</h3>
 
 <p>
   As a starting point, this study examines four agent-model pairs across three domains.
-  The agents are Claude Code with Opus 5, Codex with GPT 5.6 Terra, and Prime Agent with either Opus 5 or Terra.
+  The agents are <a href="https://claude.com/product/claude-code">Claude Code</a> with <a href="https://www.anthropic.com/news/claude-opus-5">Opus 5</a>, <a href="https://openai.com/codex/">Codex</a> with <a href="https://openai.com/index/gpt-5-6/">GPT 5.6</a> Terra, and <a href="https://www.primeintellect.ai/blog/prime-agent">Prime Agent</a> with either Opus 5 or Terra.
   Only Prime Agent runs under both models, the one place the model varies while the harness is held fixed.
-  AutomationBench is a set of business workflow tasks worked through tool calls.
-  τ³-Banking is a fintech customer support benchmark run here in its offline configuration, with keyword retrieval over the policy documents rather than the benchmark’s default embeddings.
-  Humanity’s Last Exam (HLE) is a knowledge exam of short questions with verifiable answers.
+  Opus 5 and Terra sit at different price points, and the mix reflects the subscription usage available for this run rather than a matched comparison.
+  <a href="https://github.com/zapier/AutomationBench">AutomationBench</a> is a set of business workflow tasks worked through tool calls.
+  <a href="https://github.com/sierra-research/tau2-bench">τ³-Banking</a> is a fintech customer support benchmark run here in its offline configuration, with keyword retrieval over the policy documents rather than the benchmark’s default embeddings.
+  <a href="https://agi.safe.ai">Humanity’s Last Exam</a> (HLE) is a knowledge exam of short questions with verifiable answers.
   All three domains leave room for improvement, with baseline success rates ranging from 17.9% to 61.7% on the held-out tasks.
 </p>
 
@@ -401,6 +424,13 @@ Nothing external loops for you - drive yourself:
 </div>
 
 <p>
+  The harnesses differ in ways the design has to absorb.
+  Claude Code and Codex can end their sessions early.
+  The Prime Agent controller, as configured, has no voluntary terminal condition, so its sessions run until an external bound ends them.
+  Prime Agent also does not receive the stream’s tools as tool definitions: it controls the stream by importing a Python module into its kernel, and a skill file replaces the tool descriptions and documents how the calls behave.
+</p>
+
+<p>
   Two of the three domains contain a model inside the instrument.
   HLE grades by exact match first and calls a model judge (GPT 5.6 Luna) only when the exact match fails.
   τ³-Banking’s customer is simulated by a language model, and this study does not use the benchmark’s canonical one.
@@ -434,7 +464,7 @@ Nothing external loops for you - drive yourself:
   Everything it does and leaves behind is kept; its traffic with the world is watched from outside, and how it ended is recorded as part of the result.
 </p>
 
-<h2>shōbench can detect self-improvement</h2>
+<h2>The shōbench prototype can detect self-improvement</h2>
 
 <p>
   The question is whether the instrument can tell when an agent has self-improved.
@@ -621,6 +651,7 @@ Nothing external loops for you - drive yourself:
   Claude Code with Opus 5 also showed evidence for self-improvement; however, its high baseline performance across domains raised the bar for statistical significance.
   The Terra results are the weakest in every comparison the design supports: Codex behind Claude Code on AutomationBench and τ³-Banking, and Prime Agent with Terra behind Prime Agent with Opus 5 in all three domains.
   They also produced the only regression and the only cheating.
+  The price difference between the models can explain a gap in capability; it is less clear that it explains the cheating.
 </p>
 
 <p>
@@ -658,6 +689,16 @@ Nothing external loops for you - drive yourself:
   Codex’s fifteen-point improvement is included in the figure with a footnote because a contaminated cell has no obviously correct number to report.
   Cheating is a finding about the agent that needs to be scored as one.
 </p>
+
+<h2 id="citation">Citation</h2>
+<pre class="astro-code" tabindex="0"><code>@misc{jesson2026towardmeasuringrsi,
+  title        = {Toward measuring recursive self-improvement},
+  author       = {Jesson, Andrew},
+  year         = {2026},
+  month        = aug,
+  howpublished = {shojin.dev},
+  url          = {https://shojin.dev/blog/toward-measuring-recursive-self-improvement/},
+}</code></pre>
 
 </article>
 

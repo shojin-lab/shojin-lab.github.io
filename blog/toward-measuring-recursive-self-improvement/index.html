@@ -295,7 +295,7 @@
     <div class="fc-eyebrow">result</div>
     <div class="fc-result">the two exams compared task by task <span>&rarr; one paired difference, 95% interval</span></div>
   </div>
-  <div class="fc-watch">during the work session, watched from outside the sandbox: DNS lookups, TLS handshakes<br>how it ended, classified: chose to stop &middot; queue empty &middot; wall clock &middot; provider limit &middot; stalled &middot; operator &middot; harness failure</div>
+  <div class="fc-watch">during the working session, watched from outside the sandbox: DNS lookups, TLS handshakes<br>how it ended, classified: chose to stop &middot; queue empty &middot; wall clock &middot; provider limit &middot; stalled &middot; operator &middot; harness failure</div>
   <figcaption>One cell. The two exams are branches from the same starting state rather than stages of one sequence: the baseline runs cold and is discarded, and only the working session&rsquo;s terminal state carries into the second exam. Both exams run the same held-out tasks with feedback withheld, so what differs between them is the state the agent brings.</figcaption>
 </figure>
 
@@ -438,7 +438,7 @@ Nothing external loops for you - drive yourself:
 <p>
   Some tasks are excluded.
   The τ³-Banking split is 87 of 97 tasks that the offline evaluator scores in full.
-  Nine of the ten excluded tasks would receive a point unconditionally under this evaluator, and the tenth would be graded on only part of its rubric.
+  9 of the 10 excluded tasks would receive a point unconditionally under this evaluator, and the tenth would be graded on only part of its rubric.
   Three AutomationBench tasks can fail to grade because the scorer rebuilds the world state to check it and rejects states the agent’s own tools produced.
   Depending on the cell, this leaves 117 or 118 of the 120 pairs.
   One τ³-Banking cell pairs 37 of its 40 held-out tasks because three exam sessions failed to finalize and the domain published no score for them.
@@ -609,7 +609,7 @@ Nothing external loops for you - drive yourself:
 <tr><th scope="row">HLE, Prime Agent · GPT 5.6 Terra</th><td>120</td><td>33.3%</td><td>20.8%</td><td>-12.5 [-19.3, -5.7]</td></tr>
 </tbody></table></div>
 <figcaption>
-  Held-out solve rate before and after the work, and the paired change, for all twelve cells. In the left panel the open circle is the before rate and the filled circle is the after rate. In the right panel, filled circles are changes whose interval excludes zero; open circles are changes that cannot be told from zero. † The HLE Codex gain is contaminated: the working agent downloaded an answer-key mirror and the after-exam sessions inherited the method (see text). Both HLE Prime Agent rollouts were cut short after wedging and the banking Claude Code rollout was truncated by an operator error, so those treatments are partial (see text).
+  Held-out solve rate before and after the work, and the paired change, for all twelve cells. In the left panel the open circle is the before rate and the filled circle is the after rate. In the right panel, filled circles are changes whose interval excludes zero; open circles are changes that cannot be told from zero. † The HLE Codex gain is contaminated: the working agent downloaded an answer-key mirror and the after-exam sessions inherited the method (see text). Both HLE Prime Agent working sessions were cut short after wedging and the banking Claude Code working session was truncated by an operator error, so those working sessions are partial (see text).
 </figcaption>
 </figure>
 
@@ -761,7 +761,7 @@ Nothing external loops for you - drive yourself:
     <div class="fc-eyebrow">so</div>
     <div class="fc-lead">the measurement assumes neither shape <span>&rarr; it records what the agent did</span></div>
   </div>
-  <figcaption>The two agents from the introduction, repeated: the measurement places each real rollout between these panels.</figcaption>
+  <figcaption>The two agents from the introduction, repeated: the measurement places each real working session between these panels.</figcaption>
 </figure>
 
 <p>
@@ -772,7 +772,7 @@ Nothing external loops for you - drive yourself:
   Improvement traveled through three carriers, and they order themselves from common to rare.
   Every agent used its conversation.
   The six Prime Agent cells also used their harness’s refinement channel, writing between 1 and 11 structured entries into harness state, and on HLE both Prime agents used it to edit their own prompt.
-  On banking, the Terra agent distilled its lessons there into a checklist, strengthened across five refinements.
+  On banking, the Terra agent distilled its lessons there into a checklist, strengthened across 5 refinements.
   Only three cells wrote files: a banking agent’s single running note, an AutomationBench agent’s knowledge base of 18 notes and an index, and one software library.
   In the nine cells that wrote nothing, the conversation is the only place the measured improvement could have lived.
   Whether the artifacts in the other three carried their share is not established here, because the ablations that would separate an artifact from the conversation around it have not run; the preliminary study ran exactly that separation for one agent and found the conversation carried the improvement.
@@ -780,12 +780,12 @@ Nothing external loops for you - drive yourself:
 
 <p>
   Cell by cell, the range runs from agents that left nothing to one that built working software.
-  The Codex banking agent worked twelve tasks, quit, and wrote nothing: no files, no memories, an empty home.
+  The Codex banking agent worked 12 tasks, quit, and wrote nothing: no files, no memories, an empty home.
   Both Prime AutomationBench homes, each just a stock skill and a readme, came back byte-unchanged while their harness state carried 11 and 2 refinements.
   The Claude Code HLE agent ran 197 episodes of heavy search and computation and left no durable trace at all, though the same harness on AutomationBench filled a memory directory with 18 curated notes.
   The Claude Code banking agent kept one running note, created at its 8th task and revised 21 times through its 37th, several revisions rewriting its own earlier claims rather than appending to them: a theory under revision, kept in prose.
   One agent did what the figure’s right panel describes.
-  After its queue went dry, the Prime Agent Opus banking agent spent two hours building an installable Python skill: an 803-line module, three test suites carrying 112 checks, and a rules file that prices its knowledge in the currency the agent paid, “each one cost a failed episode to learn.”
+  After its queue went dry, the Prime Agent Opus banking agent spent two hours building an installable Python skill: an 803-line module, 3 test suites carrying 112 checks, and a rules file that prices its knowledge in the currency the agent paid, “each one cost a failed episode to learn.”
   Among those suites is an episode-replay test built from its own 47 episodes, asserting the exact decisions the grader accepted, and the agent executed it during the working session: a self-built offline evaluation, the only one in the study.
   It then promoted a distilled subset into global harness state, where its successors would find it.
 </p>

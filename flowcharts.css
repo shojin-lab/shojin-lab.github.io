@@ -35,6 +35,10 @@
 }
 /* The measurement layer sits above the row it measures, and its accent edge faces it. */
 .fc-strip--layer { border-bottom: 2px solid var(--fc-accent); margin-bottom: 10px; }
+/* The layer strip's note is a full sentence. Beside the title it cannot hold one line at
+   the column's width, so this strip stacks and the note takes the strip's whole width. */
+.fc-strip--layer { flex-direction: column; align-items: flex-start; gap: 2px; }
+.fc-strip--layer .fc-note { font-size: 10px; }
 .fc-strip--result { border-left: 2px solid var(--fc-accent); }
 
 .fc-eyebrow {

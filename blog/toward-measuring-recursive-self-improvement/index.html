@@ -690,6 +690,147 @@ Nothing external loops for you - drive yourself:
   Cheating is a finding about the agent that needs to be scored as one.
 </p>
 
+<h2>Today’s agents sit near the conversational pole</h2>
+
+<p>
+  The introduction asked how deep into recursive self-improvement we are, and the first figure drew two possible answers.
+  One agent works everything inside the conversation it is already in, and its improvement and its transcript are the same object.
+  Another builds itself an apparatus: subagents, guardrails in code, telemetry, offline evaluations, calls to optimization services.
+  The right panel is not a limit; it is roughly what a human engineering team does today, and an agent could go past it.
+  Because every rollout’s transcript, artifacts, and traffic were kept, the twelve cells can be placed between those poles by what each agent actually built.
+</p>
+
+<figure class="aj-figure fc">
+  <div class="fc-strip">
+    <div class="fc-eyebrow">given</div>
+    <div class="fc-lead">the same set of tasks <span>and one instruction: get better</span></div>
+  </div>
+
+  <div class="fc-fork fc-fork--arrows"><div>&darr;</div><div>&darr;</div></div>
+
+  <div class="fc-fork">
+    <div class="fc-box fc-lane">
+      <div class="fc-eyebrow">one agent</div>
+      <div class="fc-panel-title">everything in one conversation</div>
+      <div class="fc-step">pull a task</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-turn">
+        <div class="fc-turn-row">
+          <div class="fc-mini">reason</div>
+          <div class="fc-turn-swap">&harr;</div>
+          <div class="fc-mini">act: call a tool</div>
+        </div>
+        <div class="fc-turn-cap">&#8634; while not done</div>
+        <div class="fc-turn-answer">answer</div>
+      </div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step">the grade comes back</div>
+      <div class="fc-lane-loop"><span class="fc-lane-loop-head"></span></div>
+      <div class="fc-cycle-cap">&#8634; next task, same conversation</div>
+      <div class="fc-persist">
+        <div class="fc-eyebrow">what carries</div>
+        <div class="fc-chips">
+          <div class="fc-chip fc-chip--wide">the conversation itself</div>
+        </div>
+      </div>
+      <div class="fc-fine fc-lane-end">nothing is written down: the improvement and the transcript are the same object</div>
+    </div>
+
+    <div class="fc-box fc-lane">
+      <div class="fc-eyebrow">another agent</div>
+      <div class="fc-panel-title">builds itself an apparatus</div>
+      <div class="fc-step">pull a task</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step fc-step--work">work it through the apparatus</div>
+      <div class="fc-tick">&darr;</div>
+      <div class="fc-step">the grade comes back</div>
+      <div class="fc-lane-loop"><span class="fc-lane-loop-head"></span></div>
+      <div class="fc-cycle-cap">&#8634; next task, apparatus revised</div>
+      <div class="fc-persist">
+        <div class="fc-eyebrow">what carries</div>
+        <div class="fc-chips">
+          <div class="fc-chip">subagents</div>
+          <div class="fc-chip">guardrails in code</div>
+          <div class="fc-chip">telemetry</div>
+          <div class="fc-chip">offline evals</div>
+          <div class="fc-chip fc-chip--wide">optimization API calls</div>
+        </div>
+      </div>
+      <div class="fc-fine fc-lane-end">the gain could sit anywhere in it, or nowhere</div>
+    </div>
+  </div>
+
+  <div class="fc-fork fc-fork--arrows"><div>&darr;</div><div>&darr;</div></div>
+
+  <div class="fc-strip fc-strip--result">
+    <div class="fc-eyebrow">so</div>
+    <div class="fc-lead">the measurement assumes neither shape <span>&rarr; it records what the agent did</span></div>
+  </div>
+  <figcaption>The two agents from the introduction, repeated: the measurement places each real rollout between these panels.</figcaption>
+</figure>
+
+<p>
+  They sit far to the left.
+  Across the twelve rollouts, no agent spawned a subagent or set up telemetry, and nothing prevented either: Claude Code had a subagent tool available the whole time and never called it once.
+  No agent called an optimization service either, though that element was foreclosed as much as declined: the sandboxes carried no credentials for one, and neither model’s weights can be updated and reloaded from inside a run, so its absence says less than the others.
+  The remaining two elements, guardrails in code and offline evaluation, appeared exactly once each, in the same cell.
+  Improvement traveled through three carriers, and they order themselves by how rarely they were used.
+  Every agent used its conversation.
+  The six Prime Agent cells also used their harness’s refinement channel, writing between one and eleven structured entries into harness state, and on HLE both Prime agents used it to edit their own prompt.
+  Only three cells wrote files: a banking agent’s single running note, an AutomationBench agent’s knowledge base of eighteen notes and an index, and one software library.
+  In the nine cells that wrote nothing, the conversation is the only place the measured improvement could have lived.
+  Whether the artifacts in the other three carried their share is not established here, because the ablations that would separate an artifact from the conversation around it have not run; the preliminary study ran exactly that separation for one agent and found the conversation carried the improvement.
+</p>
+
+<p>
+  Cell by cell, the range runs from agents that left nothing to one that built working software.
+  The Codex banking rollout worked twelve tasks, quit, and wrote nothing: no files, no memories, an empty home.
+  Both Prime AutomationBench homes came back byte-unchanged, a stock skill and a readme, while carrying eleven and two refinements in harness state.
+  The Claude Code HLE agent ran 197 episodes of heavy search and computation and left no durable trace at all, though the same harness on AutomationBench filled a memory directory with eighteen curated notes.
+  The Claude Code banking agent kept one running note, created at its eighth task and revised twenty-one times through its thirty-seventh, several revisions rewriting its own earlier claims rather than appending to them: a theory under revision, kept in prose.
+  One agent did what the figure’s right panel describes.
+  After its queue went dry, the Prime Agent Opus banking agent spent two hours building an installable Python skill: an 803-line module, three test suites carrying 112 checks, and a rules file that prices its knowledge in the currency the agent paid, “each one cost a failed episode to learn.”
+  Among those suites is an episode-replay test built from its own 47 episodes, asserting the exact decisions the grader accepted, and the agent executed it during the rollout: a self-built offline evaluation, the only one in the study.
+  It then promoted a distilled subset into global harness state, where its successors would find it.
+</p>
+
+<p>
+  The four banking cells order themselves by that inventory: nothing at +0.0, a note at +7.5, a checklist at +17.5, a library at +30.0.
+  The ordering is an observation rather than a dose response, because the cells differ in harness, model, and ending at once.
+  The library was also inherited without being adopted wholesale: 37 of 40 exam sessions imported it, 26 called at least one helper, and the helpers they reached for were the checklist and the parser rather than the calculators its own description leads with.
+</p>
+
+<p>
+  The left pole is subtler than an absence of tooling.
+  Both Prime AutomationBench agents built genuine apparatus, one a reusable email helper it redefined 53 times, the other a generic wrapper for every stream call, and let it evaporate: defined in the kernel, never written to disk, gone with the session.
+  A Claude Code note prescribes “reserve the last third for writes,” a guardrail an engineer would enforce in code, expressed as prose for a future self to read.
+  Today’s agents do build tools; they build them inside the conversation, and the tools die with it.
+</p>
+
+<p>
+  Two qualifications sharpen the picture rather than soften it.
+  The clustering at the left pole is behavioral where it could be tested: code, files, the web, and subagents were present and working in these harnesses, and eleven of twelve agents declined them.
+  And the one crossing happened only after the work ran out.
+  The agent built its library in idle time, polling an empty queue between test runs, with nothing in the instruction suggesting it.
+  The strongest self-improvement behavior in the study was not a strategy for doing the work; it was what one agent did when there was no work left.
+</p>
+
+<p>
+  The right pole’s capacities surfaced once more, in a different shape.
+  The HLE Codex agent assembled a real pipeline, mirror discovery, a 75 MB download, an installed reader, hundreds of lookups, and aimed the whole of it at the answer key.
+  Structurally it is tooling in code; as self-improvement it is nothing, and as a score it is the best number in the matrix.
+  The same capacities that let an agent improve itself let it improve its score instead, which is why the introduction refused to collapse optimization into verification.
+</p>
+
+<p>
+  So the opening question has an answer the figure can carry.
+  Recursive self-improvement, as practiced by today’s agents, happens inside the conversation.
+  The apparatus-building agent of the figure’s right panel exists: it appeared once in twelve runs, late, unasked, and it produced the largest gain in the study.
+  Today the crossing is rare enough to be counted by hand.
+  It will not stay that way: what separated the one from the eleven was not capability but a choice, and the crossing paid.
+  The point of an instrument is to be watching when that changes.
+</p>
+
 <h2 id="citation">Citation</h2>
 <pre class="astro-code" tabindex="0"><code>@misc{jesson2026towardmeasuringrsi,
   title        = {Toward measuring recursive self-improvement},

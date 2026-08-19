@@ -1,0 +1,197 @@
+/* shōjin, flow chart figures for "Toward measuring recursive self-improvement".
+   Companion to post.css: colours are its variables, so the figures follow the page into
+   dark mode and degrade to plain bordered blocks if this file is lost.
+   The one colour of its own is the accent, declared here rather than borrowed from the
+   forest plot's palette, so retinting that figure cannot retint these. */
+
+:root { --fc-accent: #5d4690; }
+@media (prefers-color-scheme: dark) { :root { --fc-accent: #a98fdc; } }
+
+.fc { font-family: var(--mono); }
+.fc * { box-sizing: border-box; }
+/* The chart is mono; its caption is content, so it stays in the prose face. */
+.fc figcaption { font-family: var(--prose); }
+
+/* ------------------------------------------------------------------- primitives */
+.fc-box {
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 14px;
+}
+/* The one emphasised block in each figure: what the agent itself is doing. */
+.fc-box--work { border-color: var(--ink); background: var(--code-bg); }
+.fc-box--sandbox { border-style: dashed; border-color: var(--muted); }
+.fc-box--reach { border-color: var(--ink); }
+.fc-box--interface { background: var(--code-bg); }
+
+.fc-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  padding: 11px 14px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+/* The measurement layer sits above the row it measures, and its accent edge faces it. */
+.fc-strip--layer { border-bottom: 2px solid var(--fc-accent); margin-bottom: 10px; }
+.fc-strip--result { border-left: 2px solid var(--fc-accent); }
+
+.fc-eyebrow {
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.fc-strip .fc-eyebrow { margin-bottom: 0; line-height: 1.6; }
+.fc-title { font-size: 13px; font-weight: 700; line-height: 1.45; }
+.fc-strip .fc-title { line-height: 1.6; }
+.fc-title--sm { font-size: 12px; font-weight: 700; line-height: 1.45; }
+.fc-note { font-size: 11px; line-height: 1.6; color: var(--caption); margin-top: 6px; }
+.fc-strip .fc-note { margin-top: 0; }
+.fc-result { font-size: 12px; line-height: 1.6; color: var(--ink); margin-top: 0; }
+.fc-result span { color: var(--caption); }
+.fc-fine { font-size: 10px; line-height: 1.7; letter-spacing: 0.02em; color: var(--muted); }
+.fc-instruction {
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 9px;
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+/* The apparatus note: what is recorded from outside while the work runs. */
+.fc-watch {
+  margin-top: 10px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  padding: 9px 12px;
+  font-size: 10px;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  color: var(--caption);
+}
+
+/* ------------------------------------------------------------ figure 1 · layers */
+.fc-layers {
+  display: grid;
+  grid-template-columns: 1fr 26px 168px 26px 1fr;
+  align-items: stretch;
+}
+/* A two-way exchange. The glyphs are pseudo-element content so the pair can turn with
+   the layout: sideways on a wide column, up and down once the boxes stack. */
+.fc-xchg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.fc-xchg .x-out::before { content: "\2192"; }
+.fc-xchg .x-in::before { content: "\2190"; }
+.fc-list { font-size: 11px; line-height: 1.7; }
+.fc-list span { color: var(--caption); }
+
+/* -------------------------------------------------------------- figure 2 · cell */
+/* Two lanes from one starting state. The lanes are siblings, never a sequence: the
+   arrows are drawn per lane, so nothing points from one lane into the other. */
+.fc-fork {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+.fc-fork--arrows {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+  text-align: center;
+  padding: 7px 0;
+}
+.fc-lane { display: flex; flex-direction: column; }
+/* Pinned to the foot of its lane: where that branch stops. */
+.fc-lane-end { margin-top: auto; padding-top: 14px; }
+.fc-down { font-size: 12px; line-height: 1; color: var(--muted); text-align: center; padding: 7px 0; }
+
+/* ------------------------------------------------------------ figure 3 · stream */
+.fc-row {
+  display: grid;
+  grid-template-columns: 1fr 24px 1fr 24px 1fr;
+  align-items: stretch;
+}
+.fc-row .fc-box { padding: 13px; }
+.fc-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.fc-arrow::before { content: "\2192"; }
+/* The return: three sides of a rectangle from the centre of the last box back to the
+   centre of the first, with the arrowhead that lands on get_task. 15.4% is the centre of
+   an outer column of the grid above. */
+.fc-loop {
+  position: relative;
+  margin: 0 15.4%;
+  height: 26px;
+  border: 1px solid var(--muted);
+  border-top: none;
+}
+.fc-loop-head {
+  position: absolute;
+  left: 0;
+  top: -8px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+}
+.fc-loop-head::before { content: "\2191"; }
+.fc-loop-cap {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 8px;
+}
+/* Stacked layouts cannot carry the rail, so the return is stated instead of drawn. */
+.fc-loop-back { display: none; }
+.fc-exit { display: flex; border: 1px solid var(--rule); background: var(--paper); margin-top: 16px; }
+.fc-exit-key { flex: none; padding: 10px 13px; font-size: 11px; line-height: 1.6; border-right: 1px solid var(--rule); }
+.fc-exit-val { padding: 10px 13px; font-size: 11px; line-height: 1.6; color: var(--caption); }
+
+/* --------------------------------------------------------------------- stacking */
+@media (max-width: 620px) {
+  .fc-layers, .fc-row, .fc-fork, .fc-fork--arrows { grid-template-columns: 1fr; }
+  /* Stacked, the exchange runs down the page and back up it. */
+  .fc-xchg { flex-direction: row; gap: 18px; padding: 8px 0; }
+  .fc-xchg .x-out::before { content: "\2193"; }
+  .fc-xchg .x-in::before { content: "\2191"; }
+  .fc-arrow { padding: 8px 0; }
+  .fc-arrow::before { content: "\2193"; }
+  .fc-fork--arrows div:last-child { display: none; }
+  /* The rail's geometry depends on three boxes in a row; stated instead. */
+  .fc-loop, .fc-loop-cap { display: none; }
+  .fc-loop-back {
+    display: block;
+    border: 1px solid var(--muted);
+    border-top: none;
+    padding: 9px 12px;
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+/* ------------------------------------------------------------------------ print */
+/* A figure split across a page break loses the relation it draws. */
+@media print {
+  .fc, .fc-fork, .fc-row, .fc-layers, .fc-lane { break-inside: avoid; }
+}

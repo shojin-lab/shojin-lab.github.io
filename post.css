@@ -250,7 +250,55 @@ figure.aj-figure.aj-wide {
 }
 .ajfp-data table { width: auto; }
 
+/* -------------------------------------------------------------------- tables */
+/* A table the reader is meant to see, as opposed to the data tables inside figures
+   that are published for screen readers and clipped away. It carries its own class so
+   those stay on their own rules. Set in the mono face, like the rest of the chrome:
+   a table is read by column, not at length. Rules only, no fill. */
+
+/* A table cannot be squeezed below the width its own words need, so it travels in a
+   scroller. On the column it never uses it; on a narrow phone it scrolls rather than
+   breaking a domain name down the middle. */
+article.post .aj-table-scroll { overflow-x: auto; margin: 2.6rem 0; }
+
+article.post .aj-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+article.post .aj-table th,
+article.post .aj-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 14px 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+article.post .aj-table th:last-child,
+article.post .aj-table td:last-child { padding-right: 0; }
+
+/* The header is a label, so it takes the eyebrow treatment the figures use. */
+article.post .aj-table thead th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 0;
+  border-bottom-color: var(--ink);
+}
+
+article.post .aj-table tbody th { font-weight: 700; }
+
 @media (max-width: 620px) {
   article.post { margin-top: 48px; }
   article.post h1 { font-size: 21px; }
+
+  /* Four columns at phone width: the cells give up their gutters first, and the type
+     drops a step, before the table starts scrolling. */
+  article.post .aj-table { font-size: 11px; }
+  article.post .aj-table th,
+  article.post .aj-table td { padding: 9px 8px 9px 0; }
 }

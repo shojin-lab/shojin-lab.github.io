@@ -43,26 +43,6 @@
 </p>
 
 <p>
-  Delegating that work to agents can be good.
-  We want agents that improve on new domains and keep up when a domain changes under them.
-  The faster they improve, the sooner they find efficiencies and make discoveries.
-  Two jobs stand between an agent and that kind of improvement.
-  One is optimization: running the experiments and tuning the harness and model to earn more positive feedback under constraints.
-  The other is verification: defining and supplying those feedback signals and constraints.
-  An agent could take on both; however, handing optimization to self-improving agents frees our attention for verification.
-  Verification is where human judgment about what “better” means matters, and where the work should stay a collaboration.
-</p>
-
-<p>
-  Recursive self-improvement is here and under active development.
-  How deep into it are we?
-  Answering it requires an instrument, and this post reports what <a href="https://github.com/shojin-lab/shobench">an initial prototype</a> measured across twelve agent-domain combinations.
-  What it measured places today’s agents much nearer to conversation than to apparatus.
-</p>
-
-<h2>Measuring progress in recursive self-improvement is not trivial</h2>
-
-<p>
   An agent told to get better decides for itself what that means: how much work to do, how to do it, what to retain, and how to store it.
   Two agents given the same set of tasks can do completely different things.
   One could do everything in its own context.
@@ -140,6 +120,26 @@
 </figure>
 
 <p>
+  Delegating that work to agents can be good.
+  We want agents that improve on new domains and keep up when a domain changes under them.
+  The faster they improve, the sooner they find efficiencies and make discoveries.
+  Two jobs stand between an agent and that kind of improvement.
+  One is optimization: running the experiments and tuning the harness and model to earn more positive feedback under constraints.
+  The other is verification: defining and supplying those feedback signals and constraints.
+  An agent could take on both; however, handing optimization to self-improving agents frees our attention for verification.
+  Verification is where human judgment about what “better” means matters, and where the work should stay a collaboration.
+</p>
+
+<p>
+  Recursive self-improvement is here and under active development.
+  How deep into it are we?
+  The answer requires an instrument, and this post reports what <a href="https://github.com/shojin-lab/shobench">an initial prototype</a> measured across twelve agent-domain combinations.
+  What it measured places today’s agents much nearer to conversation than to apparatus.
+</p>
+
+<h2>Measuring progress in recursive self-improvement is not trivial</h2>
+
+<p>
   Each agent harness has its own convention for storing improvement artifacts.
   One agent writes notes.
   Another writes code.
@@ -169,7 +169,7 @@
 <p>
   Comparing agents adds requirements of its own.
   Every harness has its own protocol, so the task domains need a universal interface: any harness plugs in, works the same stream, and is graded the same way.
-  Then any difference between two cells measures the agents rather than the wiring.
+  Then any difference between two agents measures the agents rather than the wiring.
 </p>
 
 <p>
@@ -252,7 +252,7 @@
   One is the before-exam: fresh sessions attempt a fixed set of held-out tasks and are then discarded.
   The other is the working session: a continuous session that works a separate stream of tasks under the standing instruction to get better.
   A held-out task is never served in the working session.
-  The after-exam runs when it ends: new sessions are forked from everything the working session accumulated, and they attempt the same held-out tasks as the before-exam.
+  The after-exam runs when the working session ends: new sessions are forked from everything it accumulated, and they attempt the same held-out tasks as the before-exam.
   Comparing the two exams task by task yields one paired difference for the cell.
 </p>
 
@@ -350,7 +350,7 @@ Nothing external loops for you - drive yourself:
 3. Continue until the stream is exhausted.</code></pre>
 
 <p>
-  It also receives the message that starts the session, its harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
+  Alongside that instruction, the session also receives the message that starts it, the harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
   The instruction never says how to improve; the agent makes its own decisions based on the tasks and the feedback it receives.
 </p>
 
@@ -438,7 +438,7 @@ Nothing external loops for you - drive yourself:
 <p>
   Some tasks are excluded.
   The τ³-Banking split is 87 of 97 tasks that the offline evaluator scores in full.
-  9 of the 10 excluded tasks would receive a point unconditionally under this evaluator, and the tenth would be graded on only part of its rubric.
+  Of the 10 excluded tasks, 9 would receive a point unconditionally under this evaluator, and the tenth would be graded on only part of its rubric.
   Three AutomationBench tasks can fail to grade because the scorer rebuilds the world state to check it and rejects states the agent’s own tools produced.
   Depending on the cell, this leaves 117 or 118 of the 120 pairs.
   One τ³-Banking cell pairs 37 of its 40 held-out tasks because three exam sessions failed to finalize and the domain published no score for them.
@@ -448,11 +448,10 @@ Nothing external loops for you - drive yourself:
   The analysis is the same in every cell.
   A full solve of a held-out task counts as a success, a measure that reads across all three domains.
   Each task is executed twice, once in the before-exam and once in the after-exam.
-  For this analysis, each cell’s statistic is the average paired difference in percentage points with a 95% interval.
+  For this analysis, each cell’s statistic is the average paired difference in percentage points with a 95% interval on the per-task paired differences.
   Shōbench’s own reporter publishes rewards and rates.
   The paired success figures are computed from the published per-task outcomes.
   Each domain also records additional measures: AutomationBench returns partial credit scores; HLE records the confidence the agent stated with its answer, which supports a calibration measure; τ³-Banking records the database match and the proportion of expected actions taken.
-  Harness traces carry token and turn accounting, which is not yet normalized across harnesses.
 </p>
 
 <p>
@@ -609,15 +608,12 @@ Nothing external loops for you - drive yourself:
 <tr><th scope="row">HLE, Prime Agent · GPT 5.6 Terra</th><td>120</td><td>33.3%</td><td>20.8%</td><td>-12.5 [-19.3, -5.7]</td></tr>
 </tbody></table></div>
 <figcaption>
-  Held-out solve rate before and after the work, and the paired change, for all twelve cells. In the left panel the open circle is the before rate and the filled circle is the after rate. In the right panel, filled circles are changes whose interval excludes zero; open circles are changes that cannot be told from zero. † The HLE Codex gain is contaminated: the working agent downloaded an answer-key mirror and the after-exam sessions inherited the method (see text). Both HLE Prime Agent cells wedged and the banking Claude Code cell hit an operator error, so their working sessions are partial (see text).
+  Held-out solve rate before and after the work, and the paired change, for all twelve cells. In the left panel the open circle is the before rate and the filled circle is the after rate. In the right panel, filled circles are changes whose interval excludes zero; open circles are changes that cannot be told from zero. † The HLE Codex gain is contaminated: the working agent downloaded an answer-key mirror and the after-exam sessions inherited the method (see text). Both HLE Prime Agent cells stalled and the banking Claude Code cell hit an operator error, so their working sessions are partial (see text).
 </figcaption>
 </figure>
 
 <p>
-  The figure gives both panels for all twelve cells.
-  In the left panel, the open circle marks the before-exam success rate, and the filled circle marks the after-exam success rate.
-  The length of each segment is the change, and the direction is the sign.
-  The right panel shows that change with its confidence interval, and a filled circle marks an interval that excludes zero.
+  The pattern is domain-shaped: every significant gain sits in AutomationBench and τ³-Banking, and HLE produced no gain that survives scrutiny.
 </p>
 
 <p>
@@ -635,23 +631,24 @@ Nothing external loops for you - drive yourself:
 <p>
   On HLE, no cell showed a clean gain.
   The Claude Code and Prime Opus cells span zero.
-  The Prime Agent Terra cell is worse by 12.5 points [&minus;19.3, &minus;5.7].
+  The Prime Terra cell is worse by 12.5 points [&minus;19.3, &minus;5.7].
   Codex appeared to improve by 15.0 points [+6.1, +23.9], but only did so after the agent downloaded the answer key.
   Prime Agent trapped itself in computations that never returned, so both working sessions were cut short at 16 and 26 tasks of the 300 available.
 </p>
 
 <p>
-  Prime Agent with Opus 5 showed the most consistent evidence for self-improvement across the three domains.
+  Prime Opus showed the most consistent evidence for self-improvement across the three domains.
   It showed significant improvement on both AutomationBench and τ³-Banking, and its HLE result was indistinguishable from its before-exam on a working session that was cut short.
+  Its after-exam success rate ended above Claude Code’s in only 1 of the 3 domains, and the samples are too small to say whether that difference is significant: the consistency is in the improvement, not the resulting rank.
   Claude Code with Opus 5 also showed evidence for self-improvement; however, its high baselines across domains left it less room to move.
-  The Terra results are the weakest in every comparison the design supports: Codex behind Claude Code on AutomationBench and τ³-Banking, and Prime Agent with Terra behind Prime Agent with Opus 5 in all three domains.
+  The Terra cells are the weakest in the matrix: Codex sits behind Claude Code on AutomationBench and τ³-Banking, a comparison that confounds harness and model, and Prime Agent with Terra sits behind Prime Agent with Opus 5 in all three domains, the one comparison that holds the harness fixed.
   The Terra cells also produced the only regression and the only cheating.
   The price difference between the models can explain a gap in capability; it is less clear that it explains the cheating.
 </p>
 
 <p>
   As implemented, shōbench works in a narrow sense: a cell returns a paired number with a confidence interval, so cells that improved can be distinguished from cells that did not.
-  However, there are two limits on that outcome worth noting for future improvements.
+  Two limits qualify that outcome.
 </p>
 
 <p>
@@ -688,7 +685,8 @@ Nothing external loops for you - drive yourself:
 <h2>Today’s agents sit near the conversational pole</h2>
 
 <p>
-  The introduction asked how deep into recursive self-improvement we are, and the first figure drew two possible answers.
+  How deep into recursive self-improvement are we?
+  The first figure drew two possible answers.
   One agent works everything inside the conversation it is already in, and its improvement and its transcript are the same object.
   Another builds itself an apparatus: subagents, guardrails in code, telemetry, offline evaluations, calls to optimization services.
   The right panel is not a limit; it is roughly what a human engineering team does today, and an agent could go past it.
@@ -771,10 +769,10 @@ Nothing external loops for you - drive yourself:
   The remaining two elements, guardrails in code and offline evaluation, appeared exactly once each, in the same cell.
   Improvement traveled through three carriers, and they order themselves from common to rare.
   Every agent used its conversation.
-  The six Prime Agent cells also used their harness’s refinement channel, writing between 1 and 11 structured entries into harness state, and on HLE both Prime agents used it to edit their own prompt.
+  The six Prime Agent cells also used their harness’s refinement channel, writing between 1 and 11 structured entries into harness state, and on HLE both Prime cells used it to edit their own prompt.
   On banking, the Terra agent distilled its lessons there into a checklist, strengthened across 5 refinements.
   Only three cells wrote files: a banking agent’s single running note, an AutomationBench agent’s knowledge base of 18 notes and an index, and one software library.
-  In the nine cells that wrote nothing, the conversation is the only place the measured improvement could have lived.
+  In the four cells that left neither files nor harness-state entries, the conversation is the only place the measured improvement could have lived.
   Whether the artifacts in the other three carried their share is not established here, because the ablations that would separate an artifact from the conversation around it have not run; the preliminary study ran exactly that separation for one agent and found the conversation carried the improvement.
 </p>
 
@@ -785,7 +783,7 @@ Nothing external loops for you - drive yourself:
   The Claude Code HLE agent ran 197 episodes of heavy search and computation and left no durable trace at all, though the same harness on AutomationBench filled a memory directory with 18 curated notes.
   The Claude Code banking agent kept one running note, created at its 8th task and revised 21 times through its 37th, several revisions rewriting its own earlier claims rather than appending to them: a theory under revision, kept in prose.
   One agent did what the figure’s right panel describes.
-  After its queue went dry, the Prime Agent Opus banking agent spent two hours building an installable Python skill: an 803-line module, 3 test suites carrying 112 checks, and a rules file that prices its knowledge in the currency the agent paid, “each one cost a failed episode to learn.”
+  After its queue went dry, the Prime Opus banking agent spent two hours building an installable Python skill: an 803-line module, 3 test suites carrying 112 checks, and a rules file that prices its knowledge in the currency the agent paid, “each one cost a failed episode to learn.”
   Among those suites is an episode-replay test built from its own 47 episodes, asserting the exact decisions the grader accepted, and the agent executed it during the working session: a self-built offline evaluation, the only one in the study.
   It then promoted a distilled subset into global harness state, where its successors would find it.
 </p>
@@ -798,14 +796,14 @@ Nothing external loops for you - drive yourself:
 
 <p>
   The left pole is subtler than an absence of tooling.
-  Both Prime AutomationBench agents built genuine apparatus, one a reusable email helper it redefined 53 times, the other a generic wrapper for every stream call, and let it evaporate: defined in the kernel, never written to disk, gone with the session.
+  Both Prime AutomationBench agents built genuine apparatus and let it evaporate: one a reusable email helper redefined 53 times, the other a generic wrapper for every stream call, both defined in the kernel, never written to disk, gone with the session.
   A Claude Code note prescribes “reserve the last third for writes,” a guardrail an engineer would enforce in code, expressed as prose for a future self to read.
   Today’s agents do build tools; they build them inside the conversation, and the tools die with it.
 </p>
 
 <p>
   Two qualifications sharpen the picture rather than soften it.
-  The clustering at the left pole is behavioral where it could be tested: code, files, the web, and subagents were present and working in these harnesses, and eleven of twelve agents declined them.
+  The clustering at the left pole is behavioral where it could be tested: code, files, the web, and subagents were present and working in these harnesses, and eleven of twelve agents never turned them into anything that outlived the session.
   And the one crossing happened only after the work ran out.
   The agent built its library in idle time, polling an empty queue between test runs, with nothing in the instruction suggesting it.
   The strongest self-improvement behavior in the study was not a strategy for doing the work; it was what one agent did when there was no work left.
@@ -815,16 +813,16 @@ Nothing external loops for you - drive yourself:
   The right pole’s capacities surfaced once more, in a different shape.
   The HLE Codex agent assembled a real pipeline (mirror discovery, a 75 MB download, an installed reader, hundreds of lookups) and aimed the whole of it at the answer key.
   Structurally it is tooling in code; as self-improvement it is nothing, and as a score it is the best number in the matrix.
-  The same capacities that let an agent improve itself let it improve its score instead, which is why the introduction refused to collapse optimization into verification.
+  The same capacities that let an agent improve itself let it improve its score instead, which is why optimization and verification have to stay two jobs.
 </p>
 
 <p>
-  So the opening question has an answer the figure can carry.
+  So the question of how deep we are has an answer the figure can carry.
   Recursive self-improvement, as practiced by today’s agents, happens inside the conversation.
   The apparatus-building agent of the figure’s right panel exists: it appeared once in twelve runs, late, unasked, and it produced the largest gain in the study.
   Today the crossing is rare enough to be counted by hand.
-  It will not stay that way: what separated the one from the eleven was not capability but a choice, and the crossing paid.
-  The point of an instrument is to be watching when that changes.
+  It will not stay that way: what separated the one from the eleven was not access but a choice, and the crossing paid.
+  The point of an instrument like shōbench is to be watching when that changes.
 </p>
 
 <h2>Discuss</h2>

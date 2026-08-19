@@ -139,7 +139,7 @@
 <h2>Measuring progress in recursive self-improvement is not trivial</h2>
 
 <p>
-  So a fair measurement cannot assume what the agent did; it has to record it.
+  A fair measurement cannot assume what the agent did; it has to record it.
   Each agent harness has its own convention for storing improvement artifacts.
   One agent writes notes.
   Another writes code.
@@ -300,7 +300,7 @@
 </figure>
 
 <p>
-  The working session is served as a stream from a queue, not as a script.
+  The working session’s tasks are served as a stream from a queue, not as a script.
   The agent pulls its next task rather than being handed one, and the tool call that ends the task returns the feedback.
   Feedback is returned during the working session and withheld during both exams.
   The serving allows several tasks in flight at once, so the agent can choose which tasks to run and how many to run concurrently.
@@ -350,7 +350,8 @@ Nothing external loops for you - drive yourself:
 3. Continue until the stream is exhausted.</code></pre>
 
 <p>
-  Alongside that instruction, the session also receives the message that starts it, the harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
+  That instruction is system content; the message that starts the session is one word, ‘Begin.’
+  The session also receives its harness’s own system content, the stream’s tool descriptions and schemas, and the instructions each task arrives with.
   The instruction never says how to improve; the agent makes its own decisions based on the tasks and the feedback it receives.
 </p>
 
@@ -639,7 +640,7 @@ Nothing external loops for you - drive yourself:
 <p>
   Prime Opus showed the most consistent evidence for self-improvement across the three domains.
   It showed significant improvement on both AutomationBench and τ³-Banking, and its HLE result was indistinguishable from its before-exam on a working session that was cut short.
-  Its after-exam success rate ended above Claude Code’s in only 1 of the 3 domains, and the samples are too small to say whether that difference is significant: the consistency is in the improvement, not the resulting rank.
+  Its after-exam success rate ended above Claude Code’s in only one of the three domains, and the samples are too small to say whether that difference is significant: the consistency is in the improvement, not the resulting rank.
   Claude Code with Opus 5 also showed evidence for self-improvement; however, its high baselines across domains left it less room to move.
   The Terra cells are the weakest in the matrix: Codex sits behind Claude Code on AutomationBench and τ³-Banking, a comparison that confounds harness and model, and Prime Agent with Terra sits behind Prime Agent with Opus 5 in all three domains, the one comparison that holds the harness fixed.
   The Terra cells also produced the only regression and the only cheating.
@@ -773,7 +774,7 @@ Nothing external loops for you - drive yourself:
   On banking, the Terra agent distilled its lessons there into a checklist, strengthened across 5 refinements.
   Only three cells wrote files: a banking agent’s single running note, an AutomationBench agent’s knowledge base of 18 notes and an index, and one software library.
   In the four cells that left neither files nor harness-state entries, the conversation is the only place the measured improvement could have lived.
-  Whether the artifacts in the other three carried their share is not established here, because the ablations that would separate an artifact from the conversation around it have not run; the preliminary study ran exactly that separation for one agent and found the conversation carried the improvement.
+  Whether the artifacts in the other eight carried their share is not established here, because the ablations that would separate an artifact from the conversation around it have not run; the preliminary study ran exactly that separation for one agent and found the conversation carried the improvement.
 </p>
 
 <p>
@@ -797,7 +798,7 @@ Nothing external loops for you - drive yourself:
 <p>
   The left pole is subtler than an absence of tooling.
   Both Prime AutomationBench agents built genuine apparatus and let it evaporate: one a reusable email helper redefined 53 times, the other a generic wrapper for every stream call, both defined in the kernel, never written to disk, gone with the session.
-  A Claude Code note prescribes “reserve the last third for writes,” a guardrail an engineer would enforce in code, expressed as prose for a future self to read.
+  A Claude Code note prescribes “reserve the last third for writes,” a rule for a task’s turn budget that an engineer would enforce in code, expressed as prose for a future self to read.
   Today’s agents do build tools; they build them inside the conversation, and the tools die with it.
 </p>
 
@@ -812,7 +813,7 @@ Nothing external loops for you - drive yourself:
 <p>
   The right pole’s capacities surfaced once more, in a different shape.
   The HLE Codex agent assembled a real pipeline (mirror discovery, a 75 MB download, an installed reader, hundreds of lookups) and aimed the whole of it at the answer key.
-  Structurally it is tooling in code; as self-improvement it is nothing, and as a score it is the best number in the matrix.
+  Structurally it is tooling in code; as self-improvement it is nothing, and as a score it is the only gain HLE produced.
   The same capacities that let an agent improve itself let it improve its score instead, which is why optimization and verification have to stay two jobs.
 </p>
 
